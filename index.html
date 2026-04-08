@@ -482,52 +482,12 @@ const dataHandler = {
   }
 };
 
-// ─── Element SDK ───
-window.elementSdk.init({
-  defaultConfig,
-  onConfigChange: async (config) => {
-    const c = { ...defaultConfig, ...config };
-    const brand = document.getElementById('sidebarBrand');
-    if (brand) brand.textContent = c.panel_name;
-    if (currentPage === 'dashboard') renderDashboard(document.getElementById('mainContent'));
-  },
-  mapToCapabilities: (config) => {
-    const c = { ...defaultConfig, ...config };
-    return {
-      recolorables: [
-        { get: () => c.background_color, set: v => { config.background_color = v; window.elementSdk.setConfig({ background_color: v }); document.body.style.backgroundColor = v; }},
-        { get: () => c.surface_color, set: v => { config.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); }},
-        { get: () => c.text_color, set: v => { config.text_color = v; window.elementSdk.setConfig({ text_color: v }); document.body.style.color = v; }},
-        { get: () => c.accent_color, set: v => { config.accent_color = v; window.elementSdk.setConfig({ accent_color: v }); }},
-        { get: () => c.muted_color, set: v => { config.muted_color = v; window.elementSdk.setConfig({ muted_color: v }); }}
-      ],
-      borderables: [],
-      fontEditable: {
-        get: () => c.font_family || 'Plus Jakarta Sans',
-        set: v => { config.font_family = v; window.elementSdk.setConfig({ font_family: v }); document.body.style.fontFamily = v + ', sans-serif'; }
-      },
-      fontSizeable: {
-        get: () => c.font_size || 14,
-        set: v => { config.font_size = v; window.elementSdk.setConfig({ font_size: v }); document.body.style.fontSize = v + 'px'; }
-      }
-    };
-  },
-  mapToEditPanelValues: (config) => {
-    const c = { ...defaultConfig, ...config };
-    return new Map([
-      ['panel_name', c.panel_name],
-      ['welcome_text', c.welcome_text]
-    ]);
-  }
-});
-
-(async () => {
-  const res = await window.dataSdk.init(dataHandler);
-  if (!res.isOk) console.error('Data SDK init failed');
+// Tambahkan ini di paling bawah script kamu untuk menggantikan SDK yang hilang
+window.onload = () => {
   buildSidebar();
   renderPage();
   lucide.createIcons();
-})();
+};
 </script>
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e8d2ab1b76bf904',t:'MTc3NTYwODI2MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>

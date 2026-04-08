@@ -19,12 +19,12 @@
     <div class="w-full max-w-md space-y-8 py-10">
         <div class="text-center">
             <h2 class="text-4xl font-extrabold text-emerald-600 mb-2">Remstore</h2>
-            <p id="authStatusText" class="text-gray-500 font-medium">Silahkan masuk ke akun anda</p>
+            <p id="authStatusText" class="text-gray-500 font-medium uppercase tracking-widest text-xs">Silahkan pilih metode</p>
         </div>
 
         <div class="space-y-4">
             <div class="space-y-1">
-                <label class="text-sm font-bold text-gray-400 ml-2">Email Gmail</label>
+                <label class="text-sm font-bold text-gray-400 ml-2">Email Akun</label>
                 <input type="email" id="logEmail" placeholder="nama@gmail.com" class="w-full p-4 rounded-2xl bg-gray-100 border-none outline-none focus:ring-2 focus:ring-emerald-500 transition-all">
             </div>
             <div class="space-y-1">
@@ -33,19 +33,12 @@
             </div>
         </div>
 
-        <div class="space-y-3">
-            <button onclick="handleLogin()" id="btnLogin" class="w-full py-4 bg-emerald-500 text-white rounded-2xl font-bold shadow-lg shadow-emerald-200 hover:bg-emerald-600 transition-all">Masuk Sekarang</button>
-            
-            <div class="flex items-center gap-4 py-2">
-                <div class="flex-1 h-[1px] bg-gray-100"></div>
-                <span class="text-gray-300 text-xs font-bold">ATAU</span>
-                <div class="flex-1 h-[1px] bg-gray-100"></div>
-            </div>
-
-            <button onclick="handleRegister()" id="btnRegister" class="w-full py-4 bg-white text-emerald-600 border-2 border-emerald-500 rounded-2xl font-bold hover:bg-emerald-50 transition-all">Daftar Akun Baru</button>
+        <div class="grid grid-cols-2 gap-4">
+            <button onclick="handleLogin()" id="btnLogin" class="py-4 bg-emerald-500 text-white rounded-2xl font-bold shadow-lg shadow-emerald-100 hover:bg-emerald-600 transition-all">Masuk</button>
+            <button onclick="handleRegister()" id="btnRegister" class="py-4 bg-gray-100 text-gray-600 rounded-2xl font-bold hover:bg-gray-200 transition-all">Daftar</button>
         </div>
         
-        <p class="text-center text-xs text-gray-400 px-6">Dengan masuk, anda menyetujui syarat dan ketentuan Rembo Digital Store.</p>
+        <p class="text-center text-[10px] text-gray-400 uppercase tracking-widest font-bold">Rembo Digital Store</p>
     </div>
 </div>
 
@@ -116,7 +109,7 @@
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0d3VrbXltemF2a3Nsd3dveGhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1ODUyMDYsImV4cCI6MjA5MTE2MTIwNn0.veXgUwbVxQApM-AlKGQgSGqQlNvTVQOJ87YGWCWTl64";
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // --- FUNGSI LOGIN ---
+// --- FUNGSI MASUK (LOGIN) ---
 async function handleLogin() {
     const email = document.getElementById('logEmail').value;
     const password = document.getElementById('logPass').value;
@@ -125,20 +118,21 @@ async function handleLogin() {
     if (!email || !password) return alert("Isi email dan password!");
 
     btn.disabled = true;
-    btn.innerText = "Mengecek Akun...";
+    btn.innerText = "Mengecek...";
 
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     
     if (error) {
-        alert("Gagal Masuk: " + error.message);
+        // Jika akun tidak ada, Supabase akan kasih error 'Invalid login credentials'
+        alert("Gagal Masuk: Akun tidak ditemukan atau password salah. Silahkan Daftar dulu jika belum punya akun.");
         btn.disabled = false;
-        btn.innerText = "Masuk Sekarang";
+        btn.innerText = "Masuk";
     } else {
-        location.reload(); // Berhasil masuk
+        location.reload(); 
     }
 }
 
-// --- FUNGSI DAFTAR ---
+// --- FUNGSI DAFTAR (SIGN UP) ---
 async function handleRegister() {
     const email = document.getElementById('logEmail').value;
     const password = document.getElementById('logPass').value;
@@ -148,17 +142,21 @@ async function handleRegister() {
     if (password.length < 6) return alert("Password minimal 6 karakter!");
 
     btn.disabled = true;
-    btn.innerText = "Mendaftarkan...";
+    btn.innerText = "Mendaftar...";
 
     const { data, error } = await supabase.auth.signUp({ email, password });
 
     if (error) {
         alert("Gagal Daftar: " + error.message);
+        btn.disabled = false;
+        btn.innerText = "Daftar";
     } else {
-        alert("Pendaftaran Berhasil! Sekarang silahkan klik tombol Masuk.");
+        alert("Pendaftaran Berhasil! Sekarang anda sudah terdaftar. Silahkan klik tombol MASUK.");
+        btn.disabled = false;
+        btn.innerText = "Daftar";
+        // Kosongkan form agar dia login
+        document.getElementById('logPass').value = "";
     }
-    btn.disabled = false;
-    btn.innerText = "Daftar Akun Baru";
 }
 
         async function loadProfile(user) {

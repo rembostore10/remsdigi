@@ -482,12 +482,68 @@ const dataHandler = {
   }
 };
 
-// Tambahkan ini di paling bawah script kamu untuk menggantikan SDK yang hilang
-window.onload = () => {
-  buildSidebar();
-  renderPage();
-  lucide.createIcons();
-};
+// Pastikan fungsi ini dipanggil setelah halaman dimuat
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Inisialisasi tampilan dasar
+    buildSidebar();
+    renderPage();
+    
+    // 2. Aktifkan ikon Lucide
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+});
+
+// Ganti fungsi submitOrder agar mengirim ke bot Telegram & Supabase melalui API Vercel
+async function submitOrder(e) {
+    e.preventDefault();
+    const errEl = document.getElementById('formError');
+    if (errEl) errEl.classList.add('hidden');
+
+    const sid = document.getElementById('serviceSelect').value;
+    const target = document.getElementById('targetInput').value.trim();
+    const qty = parseInt(document.getElementById('qtyInput').value) || 0;
+    const svc = (services[selectedPlatform]||[]).find(s => s.id === sid);
+
+    if (!svc || !target || qty < svc.min) {
+        alert("Mohon lengkapi data dengan benar!");
+        return;
+    }
+
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.innerHTML = 'Memproses...';
+
+    const price = Math.round((qty / 1000) * svc.price);
+
+    try {
+        const response = await fetch('/api/order', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                service: svc.name,
+                target: target,
+                qty: qty,
+                price: price,
+                username: "User_Remstore" 
+            })
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            showToast('Pesanan Berhasil! Cek Telegram Admin.', 'success');
+            resetForm();
+        } else {
+            alert('Gagal: ' + result.error);
+        }
+    } catch (err) {
+        alert('Terjadi kesalahan koneksi.');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i data-lucide="send" class="w-4 h-4"></i> Pesan Sekarang';
+        lucide.createIcons();
+    }
+}
 </script>
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e8d2ab1b76bf904',t:'MTc3NTYwODI2MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>

@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="id" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMM Panel - Remstore</title>
+    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .hidden { display: none; }
+        .platform-card { transition: all 0.2s; cursor: pointer; }
+        .platform-card:hover { transform: translateY(-3px); box-shadow: 0 10px 20px -10px rgba(16, 185, 129, 0.3); border-color: #10b981; }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 10px; }
+    </style>
+</head>
+<body class="h-full bg-gray-50 text-gray-800 transition-all">
+
+    <div id="loginSection" class="fixed inset-0 z-[100] bg-white flex items-center justify-center p-6 overflow-y-auto">
+        <div class="w-full max-w-md space-y-8 py-10">
+            <div class="text-center">
+                <h2 class="text-4xl font-extrabold text-emerald-600 mb-2 italic">Remstore</h2>
+                <p id="authTitle" class="text-gray-400 font-bold uppercase tracking-widest text-[10px]">Silahkan Masuk</p>
+            </div>
+
+            <div id="formLogin" class="space-y-4">
+                <div class="space-y-1">
+                    <label class="text-[10px] font-bold text-gray-400 ml-2 uppercase">Gmail Akun</label>
+                    <input type="email" id="logEmail" placeholder="nama@gmail.com" class="w-full p-4 rounded-2xl bg-gray-100 border-none outline-none focus:ring-2 focus:ring-emerald-500 transition-all">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[10px] font-bold text-gray-400 ml-2 uppercase">Password</label>
+                    <input type="password" id="logPass" placeholder="••••••••" class="w-full p-4 rounded-2xl bg-gray-100 border-none outline-none focus:ring-2 focus:ring-emerald-500 transition-all">
+                </div>
+                <button onclick="handleLogin()" id="btnLogin" class="w-full py-4 bg-emerald-500 text-white rounded-2xl font-bold shadow-lg shadow-emerald-100 active:scale-95 transition-transform">Masuk Sekarang</button>
+                <p class="text-center text-sm text-gray-500">Belum punya akun? <span onclick="toggleAuth('daftar')" class="text-emerald-600 font-bold cursor-pointer hover:underline">Daftar di sini</span></p>
+            </div>
+
+            <div id="formDaftar" class="space-y-4 hidden">
+                <div class="space-y-1">
+                    <label class="text-[10px] font-bold text-gray-400 ml-2 uppercase">Nama Pengguna</label>
+                    <input type="text" id="regName" placeholder="Contoh: Rembo" class="w-full p-4 rounded-2xl bg-gray-100 border-none outline-none focus:ring-2 focus:ring-emerald-500 transition-all">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[10px] font-bold text-gray-400 ml-2 uppercase">Gmail Aktif</label>
+                    <input type="email" id="regEmail" placeholder="nama@gmail.com" class="w-full p-4 rounded-2xl bg-gray-100 border-none outline-none focus:ring-2 focus:ring-emerald-500 transition-all">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[10px] font-bold text-gray-400 ml-2 uppercase">Password</label>
+                    <input type="password" id="regPass" placeholder="Minimal 6 karakter" class="w-full p-4 rounded-2xl bg-gray-100 border-none outline-none focus:ring-2 focus:ring-emerald-500 transition-all">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[10px] font-bold text-gray-400 ml-2 uppercase">Nomor WhatsApp</label>
+                    <input type="number" id="regPhone" placeholder="08123456789" class="w-full p-4 rounded-2xl bg-gray-100 border-none outline-none focus:ring-2 focus:ring-emerald-500 transition-all">
+                </div>
+                <button onclick="handleRegister()" id="btnRegister" class="w-full py-4 bg-emerald-600 text-white rounded-2xl font-bold shadow-lg active:scale-95 transition-transform">Buat Akun</button>
+                <p class="text-center text-sm text-gray-500">Sudah punya akun? <span onclick="toggleAuth('login')" class="text-emerald-600 font-bold cursor-pointer hover:underline">Login di sini</span></p>
+            </div>
+            
+            <p class="text-center text-[9px] text-gray-300 uppercase tracking-[0.2em] font-bold">Rembo Digital Store</p>
+        </div>
+    </div>
+
+    <div id="mainApp" class="h-full flex overflow-hidden hidden">
+        <aside id="sidebar" class="fixed lg:static z-50 h-full w-72 bg-white border-r border-gray-100 flex flex-col transform -translate-x-full lg:translate-x-0 transition-transform">
+            <div class="p-8 flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-emerald-100">R</div>
+                <span class="font-bold text-xl tracking-tight">Remstore</span>
+            </div>
+            <nav class="flex-1 px-4 space-y-2">
+                <button onclick="showPage('dashboard')" class="nav-btn w-full flex items-center gap-4 p-4 rounded-2xl text-emerald-600 bg-emerald-50 font-bold"><i data-lucide="layout-dashboard"></i> Dashboard</button>
+                <button onclick="showPage('order')" class="nav-btn w-full flex items-center gap-4 p-4 rounded-2xl text-gray-400 hover:bg-gray-50 transition-all"><i data-lucide="shopping-cart"></i> Pemesanan</button>
+                <button onclick="showPage('deposit')" class="nav-btn w-full flex items-center gap-4 p-4 rounded-2xl text-gray-400 hover:bg-gray-50 transition-all"><i data-lucide="wallet"></i> Deposit</button>
+                <button onclick="logout()" class="w-full flex items-center gap-4 p-4 rounded-2xl text-red-400 hover:bg-red-50 transition-all mt-10"><i data-lucide="log-out"></i> Keluar</button>
+            </nav>
+        </aside>
+
+        <div class="flex-1 flex flex-col h-full overflow-hidden">
+            <header class="flex items-center justify-between px-8 py-5 bg-white border-b border-gray-50">
+                <div class="flex items-center gap-4">
+                    <button onclick="toggleSidebar()" class="lg:hidden p-2 bg-gray-100 rounded-xl"><i data-lucide="menu" class="w-5 h-5"></i></button>
+                    <h1 id="headerTitle" class="font-bold text-xl">Dashboard</h1>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="text-right hidden sm:block">
+                        <p id="userNameDisplay" class="text-xs font-bold text-gray-400 uppercase tracking-tighter">Memuat...</p>
+                        <p id="userBal" class="text-emerald-500 font-extrabold">Rp 0</p>
+                    </div>
+                    <div class="w-12 h-12 bg-gray-100 rounded-2xl flex items-center justify-center text-gray-400"><i data-lucide="user"></i></div>
+                </div>
+            </header>
+
+            <main id="contentArea" class="flex-1 overflow-y-auto p-8 space-y-8">
+                <div id="page-dashboard" class="space-y-8 animate-fade-in">
+                    <div class="bg-emerald-500 p-10 rounded-[40px] text-white shadow-2xl shadow-emerald-200 relative overflow-hidden">
+                        <div class="relative z-10">
+                            <p class="text-emerald-100 font-medium mb-2">👋 Selamat datang kembali!</p>
+                            <h2 class="text-4xl font-extrabold tracking-tight">Panel SMM Remstore</h2>
+                        </div>
+                        <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-20 -mt-20"></div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div class="bg-white p-6 rounded-[32px] border border-gray-100 shadow-sm"><p class="text-gray-400 text-[10px] font-bold uppercase">Total Pesanan</p><p class="text-3xl font-black mt-2">0</p></div>
+                        <div class="bg-white p-6 rounded-[32px] border border-gray-100 shadow-sm"><p class="text-gray-400 text-[10px] font-bold uppercase">Selesai</p><p class="text-3xl font-black mt-2 text-emerald-500">0</p></div>
+                        <div class="bg-white p-6 rounded-[32px] border border-gray-100 shadow-sm"><p class="text-gray-400 text-[10px] font-bold uppercase">Pending</p><p class="text-3xl font-black mt-2 text-amber-500">0</p></div>
+                        <div class="bg-white p-6 rounded-[32px] border border-gray-100 shadow-sm"><p class="text-gray-400 text-[10px] font-bold uppercase">Saldo</p><p id="balCard" class="text-3xl font-black mt-2 text-emerald-600">Rp 0</p></div>
+                    </div>
+                </div>
+
+                <div id="page-order" class="hidden space-y-8">
+                    <div class="bg-white p-8 rounded-[40px] border border-gray-100 shadow-sm">
+                        <h3 class="font-bold text-lg mb-6 flex items-center gap-3"><span class="w-3 h-3 bg-emerald-500 rounded-full shadow-lg shadow-emerald-200"></span> Pilih Platform</h3>
+                        <div class="grid grid-cols-3 md:grid-cols-6 gap-4">
+                            <div onclick="selectPlatform('instagram')" class="platform-card p-6 border border-gray-50 rounded-3xl flex flex-col items-center gap-3 bg-white">
+                                <span class="text-3xl">📷</span><span class="text-[10px] font-black uppercase text-gray-400">Instagram</span>
+                            </div>
+                            <div onclick="selectPlatform('tiktok')" class="platform-card p-6 border border-gray-50 rounded-3xl flex flex-col items-center gap-3 bg-white">
+                                <span class="text-3xl">🎵</span><span class="text-[10px] font-black uppercase text-gray-400">TikTok</span>
+                            </div>
+                            <div onclick="selectPlatform('telegram')" class="platform-card p-6 border border-gray-50 rounded-3xl flex flex-col items-center gap-3 bg-white">
+                                <span class="text-3xl">✈️</span><span class="text-[10px] font-black uppercase text-gray-400">Telegram</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="orderForm" class="hidden bg-white p-8 rounded-[40px] border border-gray-100 shadow-sm space-y-6 max-w-2xl mx-auto">
+                        <div class="space-y-4">
+                            <select id="svcSel" class="w-full p-4 rounded-2xl bg-gray-50 border-none outline-none font-bold text-sm text-gray-600">
+                                <option>Pilih Layanan Instagram...</option>
+                                <option>Instagram Followers HQ - Rp 15.000</option>
+                                <option>Instagram Likes Real - Rp 8.000</option>
+                            </select>
+                            <input type="text" id="targetInp" placeholder="Target (Link/Username)" class="w-full p-4 rounded-2xl bg-gray-50 border-none outline-none font-medium">
+                            <input type="number" id="qtyInp" placeholder="Jumlah Pesanan" class="w-full p-4 rounded-2xl bg-gray-50 border-none outline-none font-medium">
+                        </div>
+                        <div class="p-6 bg-emerald-50 rounded-[24px] flex justify-between items-center">
+                            <span class="text-emerald-800 font-bold">Estimasi Harga</span>
+                            <span class="text-2xl font-black text-emerald-600">Rp 0</span>
+                        </div>
+                        <button onclick="kirimPesanan()" id="btnOrder" class="w-full py-5 bg-emerald-500 text-white rounded-[24px] font-black shadow-xl shadow-emerald-100 flex items-center justify-center gap-3 active:scale-95 transition-all">
+                            <i data-lucide="send"></i> PESAN SEKARANG
+                        </button>
+                    </div>
+                </div>
+
+                <div id="page-deposit" class="hidden">
+                    <div class="max-w-md mx-auto bg-white p-10 rounded-[40px] border border-gray-100 shadow-xl text-center space-y-6">
+                        <h3 class="font-black text-2xl text-gray-800 italic">Deposit Saldo</h3>
+                        <div class="bg-gray-50 p-4 rounded-[32px] inline-block border-2 border-dashed border-emerald-200">
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=REMSDIGI_PAYMENT" class="w-48 h-48 rounded-2xl" alt="QRIS">
+                        </div>
+                        <p class="text-xs font-bold text-gray-400 leading-relaxed uppercase tracking-widest">Scan QRIS All Payment<br>Lalu Upload Bukti Transfer</p>
+                        <input type="file" id="proofImg" class="w-full text-xs text-gray-400 file:mr-4 file:py-3 file:px-6 file:rounded-2xl file:border-0 file:text-xs file:font-bold file:bg-emerald-50 file:text-emerald-700">
+                        <button onclick="alert('Bukti terkirim! Saldo akan diproses admin.')" class="w-full py-5 bg-emerald-500 text-white rounded-[24px] font-black shadow-lg shadow-emerald-100">KONFIRMASI BAYAR</button>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        // --- KONFIGURASI SUPABASE (GANTI DISINI) ---
+        const URL_SB = "https://rtwukmymzavkslwwoxhs.supabase.co";
+        const KEY_SB = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0d3VrbXltemF2a3Nsd3dveGhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1ODUyMDYsImV4cCI6MjA5MTE2MTIwNn0.veXgUwbVxQApM-AlKGQgSGqQlNvTVQOJ87YGWCWTl64";
+        const supabaseClient = supabase.createClient(URL_SB, KEY_SB);
+
+        // --- FUNGSI AUTH ---
+        function toggleAuth(mode) {
+            document.getElementById('formLogin').classList.toggle('hidden', mode === 'daftar');
+            document.getElementById('formDaftar').classList.toggle('hidden', mode === 'login');
+            document.getElementById('authTitle').innerText = mode === 'daftar' ? "Daftar Akun Baru" : "Silahkan Masuk";
+        }
+
+        async function handleLogin() {
+            const email = document.getElementById('logEmail').value;
+            const password = document.getElementById('logPass').value;
+            const btn = document.getElementById('btnLogin');
+
+            if(!email || !password) return alert("Isi semua kolom!");
+            btn.innerText = "Mengecek Akun...";
+            btn.disabled = true;
+
+            const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+            if(error) {
+                alert("Gagal: Akun tidak ditemukan. Silahkan DAFTAR dulu!");
+                btn.innerText = "Masuk Sekarang";
+                btn.disabled = false;
+            } else {
+                location.reload();
+            }
+        }
+
+        async function handleRegister() {
+            const name = document.getElementById('regName').value;
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPass').value;
+            const phone = document.getElementById('regPhone').value;
+
+            if(!name || !email || !password || !phone) return alert("Lengkapi data!");
+            const btn = document.getElementById('btnRegister');
+            btn.innerText = "Mendaftarkan...";
+            
+            const { data, error } = await supabaseClient.auth.signUp({
+                email, password,
+                options: { data: { full_name: name, phone: phone } }
+            });
+
+            if(error) {
+                alert("Gagal: " + error.message);
+            } else {
+                alert("Pendaftaran Berhasil! Sekarang silahkan LOGIN.");
+                toggleAuth('login');
+            }
+            btn.innerText = "Buat Akun";
+        }
+
+        // --- CEK LOGIN SESSION ---
+        supabaseClient.auth.onAuthStateChange((event, session) => {
+            if (session) {
+                document.getElementById('loginSection').classList.add('hidden');
+                document.getElementById('mainApp').classList.remove('hidden');
+                updateUI(session.user);
+            }
+        });
+
+        async function updateUI(user) {
+            const { data } = await supabaseClient.from('profiles').select('*').eq('id', user.id).single();
+            if (data) {
+                const balFormatted = `Rp ${data.balance.toLocaleString('id')}`;
+                document.getElementById('userBal').innerText = balFormatted;
+                document.getElementById('balCard').innerText = balFormatted;
+                document.getElementById('userNameDisplay').innerText = data.full_name || user.email;
+            }
+            lucide.createIcons();
+        }
+
+        // --- NAVIGASI ---
+        function showPage(pageId) {
+            document.querySelectorAll('[id^="page-"]').forEach(p => p.classList.add('hidden'));
+            document.getElementById('page-' + pageId).classList.remove('hidden');
+            document.getElementById('headerTitle').innerText = pageId.charAt(0).toUpperCase() + pageId.slice(1);
+            
+            document.querySelectorAll('.nav-btn').forEach(b => {
+                b.classList.remove('bg-emerald-50', 'text-emerald-600');
+                b.classList.add('text-gray-400');
+            });
+            event.currentTarget.classList.add('bg-emerald-50', 'text-emerald-600');
+            event.currentTarget.classList.remove('text-gray-400');
+            lucide.createIcons();
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('-translate-x-full');
+        }
+
+        function selectPlatform(p) {
+            document.getElementById('orderForm').classList.remove('hidden');
+            document.getElementById('orderForm').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        async function kirimPesanan() {
+            const target = document.getElementById('targetInp').value;
+            const qty = document.getElementById('qtyInp').value;
+            const btn = document.getElementById('btnOrder');
+            
+            if(!target || !qty) return alert("Lengkapi data pesanan!");
+            btn.disabled = true;
+            btn.innerText = "MEMPROSES...";
+
+            const { data: { user } } = await supabaseClient.auth.getUser();
+
+            const res = await fetch('/api/order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    service: "Instagram Followers HQ", 
+                    target, qty, price: 0, 
+                    username: user.email 
+                })
+            });
+
+            if(res.ok) {
+                alert("Pesanan Masuk! Notifikasi terkirim ke Telegram.");
+                location.reload();
+            } else {
+                alert("Gagal. Cek koneksi API kamu.");
+            }
+            btn.disabled = false;
+        }
+
+        async function logout() {
+            await supabaseClient.auth.signOut();
+            location.reload();
+        }
+
+        lucide.createIcons();
+    </script>
+</body>
+</html>

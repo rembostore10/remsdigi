@@ -16,26 +16,26 @@
 </head>
 <body class="h-full bg-gray-50 text-gray-800">
     <div id="loginSection" class="fixed inset-0 z-[100] bg-white flex items-center justify-center p-6 overflow-y-auto">
-    <div class="w-full max-w-md space-y-8 py-10">
+    <div class="w-full max-w-md space-y-6 py-10">
         <div class="text-center">
             <h2 class="text-4xl font-extrabold text-emerald-600 mb-2">Remstore</h2>
-            <p id="authStatusText" class="text-gray-500 font-medium uppercase tracking-widest text-xs">Silahkan pilih metode</p>
+            <p id="authTitle" class="text-gray-500 font-bold uppercase tracking-widest text-xs">Silahkan Masuk</p>
         </div>
 
-        <div class="space-y-4">
-            <div class="space-y-1">
-                <label class="text-sm font-bold text-gray-400 ml-2">Email Akun</label>
-                <input type="email" id="logEmail" placeholder="nama@gmail.com" class="w-full p-4 rounded-2xl bg-gray-100 border-none outline-none focus:ring-2 focus:ring-emerald-500 transition-all">
-            </div>
-            <div class="space-y-1">
-                <label class="text-sm font-bold text-gray-400 ml-2">Password</label>
-                <input type="password" id="logPass" placeholder="••••••••" class="w-full p-4 rounded-2xl bg-gray-100 border-none outline-none focus:ring-2 focus:ring-emerald-500 transition-all">
-            </div>
+        <div id="formLogin" class="space-y-4">
+            <input type="email" id="logEmail" placeholder="Gmail Akun" class="w-full p-4 rounded-2xl bg-gray-100 border-none outline-none focus:ring-2 focus:ring-emerald-500 transition-all">
+            <input type="password" id="logPass" placeholder="Password" class="w-full p-4 rounded-2xl bg-gray-100 border-none outline-none focus:ring-2 focus:ring-emerald-500 transition-all">
+            <button onclick="handleLogin()" id="btnLogin" class="w-full py-4 bg-emerald-500 text-white rounded-2xl font-bold shadow-lg shadow-emerald-100">Masuk</button>
+            <p class="text-center text-sm text-gray-500">Belum punya akun? <span onclick="toggleAuth('daftar')" class="text-emerald-600 font-bold cursor-pointer">Daftar di sini</span></p>
         </div>
 
-        <div class="grid grid-cols-2 gap-4">
-            <button onclick="handleLogin()" id="btnLogin" class="py-4 bg-emerald-500 text-white rounded-2xl font-bold shadow-lg shadow-emerald-100 hover:bg-emerald-600 transition-all">Masuk</button>
-            <button onclick="handleRegister()" id="btnRegister" class="py-4 bg-gray-100 text-gray-600 rounded-2xl font-bold hover:bg-gray-200 transition-all">Daftar</button>
+        <div id="formDaftar" class="space-y-4 hidden">
+            <input type="text" id="regName" placeholder="Nama Pengguna" class="w-full p-4 rounded-2xl bg-gray-100 border-none outline-none focus:ring-2 focus:ring-emerald-500 transition-all">
+            <input type="email" id="regEmail" placeholder="Gmail (Untuk Login & Saldo)" class="w-full p-4 rounded-2xl bg-gray-100 border-none outline-none focus:ring-2 focus:ring-emerald-500 transition-all">
+            <input type="password" id="regPass" placeholder="Password Login" class="w-full p-4 rounded-2xl bg-gray-100 border-none outline-none focus:ring-2 focus:ring-emerald-500 transition-all">
+            <input type="number" id="regPhone" placeholder="Nomor Telepon (WhatsApp)" class="w-full p-4 rounded-2xl bg-gray-100 border-none outline-none focus:ring-2 focus:ring-emerald-500 transition-all">
+            <button onclick="handleRegister()" id="btnRegister" class="w-full py-4 bg-emerald-600 text-white rounded-2xl font-bold">Buat Akun Sekarang</button>
+            <p class="text-center text-sm text-gray-500">Sudah punya akun? <span onclick="toggleAuth('login')" class="text-emerald-600 font-bold cursor-pointer">Login di sini</span></p>
         </div>
         
         <p class="text-center text-[10px] text-gray-400 uppercase tracking-widest font-bold">Rembo Digital Store</p>
@@ -109,53 +109,59 @@
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0d3VrbXltemF2a3Nsd3dveGhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1ODUyMDYsImV4cCI6MjA5MTE2MTIwNn0.veXgUwbVxQApM-AlKGQgSGqQlNvTVQOJ87YGWCWTl64";
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// --- FUNGSI MASUK (LOGIN) ---
+// Fungsi Pindah Tampilan Form
+function toggleAuth(mode) {
+    const loginForm = document.getElementById('formLogin');
+    const daftarForm = document.getElementById('formDaftar');
+    const title = document.getElementById('authTitle');
+
+    if (mode === 'daftar') {
+        loginForm.classList.add('hidden');
+        daftarForm.classList.remove('hidden');
+        title.innerText = "Daftar Akun Baru";
+    } else {
+        loginForm.classList.remove('hidden');
+        daftarForm.classList.add('hidden');
+        title.innerText = "Silahkan Masuk";
+    }
+}
+
+// FUNGSI LOGIN
 async function handleLogin() {
     const email = document.getElementById('logEmail').value;
     const password = document.getElementById('logPass').value;
-    const btn = document.getElementById('btnLogin');
-
-    if (!email || !password) return alert("Isi email dan password!");
-
-    btn.disabled = true;
-    btn.innerText = "Mengecek...";
+    if (!email || !password) return alert("Isi Gmail dan Password!");
 
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    
     if (error) {
-        // Jika akun tidak ada, Supabase akan kasih error 'Invalid login credentials'
-        alert("Gagal Masuk: Akun tidak ditemukan atau password salah. Silahkan Daftar dulu jika belum punya akun.");
-        btn.disabled = false;
-        btn.innerText = "Masuk";
+        alert("Gagal: Akun tidak ditemukan. Silahkan daftar dulu.");
     } else {
         location.reload(); 
     }
 }
 
-// --- FUNGSI DAFTAR (SIGN UP) ---
+// FUNGSI DAFTAR
 async function handleRegister() {
-    const email = document.getElementById('logEmail').value;
-    const password = document.getElementById('logPass').value;
-    const btn = document.getElementById('btnRegister');
+    const name = document.getElementById('regName').value;
+    const email = document.getElementById('regEmail').value;
+    const password = document.getElementById('regPass').value;
+    const phone = document.getElementById('regPhone').value;
 
-    if (!email || !password) return alert("Isi email dan password untuk mendaftar!");
-    if (password.length < 6) return alert("Password minimal 6 karakter!");
+    if (!name || !email || !password || !phone) return alert("Semua kolom wajib diisi!");
 
-    btn.disabled = true;
-    btn.innerText = "Mendaftar...";
-
-    const { data, error } = await supabase.auth.signUp({ email, password });
+    const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+            data: { full_name: name, phone: phone } // Simpan nama & no hp ke metadata
+        }
+    });
 
     if (error) {
         alert("Gagal Daftar: " + error.message);
-        btn.disabled = false;
-        btn.innerText = "Daftar";
     } else {
-        alert("Pendaftaran Berhasil! Sekarang anda sudah terdaftar. Silahkan klik tombol MASUK.");
-        btn.disabled = false;
-        btn.innerText = "Daftar";
-        // Kosongkan form agar dia login
-        document.getElementById('logPass').value = "";
+        alert("Pendaftaran Berhasil! Sekarang silahkan login menggunakan Gmail anda.");
+        toggleAuth('login'); // Otomatis pindah ke form login
     }
 }
 

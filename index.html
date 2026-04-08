@@ -15,16 +15,39 @@
     </style>
 </head>
 <body class="h-full bg-gray-50 text-gray-800">
-    <div id="loginSection" class="fixed inset-0 z-[100] bg-white flex items-center justify-center p-4">
-        <div class="w-full max-w-md space-y-6">
-            <div class="text-center"><h2 class="text-3xl font-bold text-emerald-600">Remstore</h2><p class="text-gray-500">Silahkan Login untuk Memesan</p></div>
-            <div class="space-y-4">
-                <input type="email" id="logEmail" placeholder="Email Gmail" class="w-full p-4 rounded-2xl bg-gray-100 border-none outline-none">
-                <input type="password" id="logPass" placeholder="Password" class="w-full p-4 rounded-2xl bg-gray-100 border-none outline-none">
-                <button onclick="handleAuth()" id="authBtn" class="w-full py-4 bg-emerald-500 text-white rounded-2xl font-bold shadow-lg shadow-emerald-200">Masuk / Daftar</button>
+    <div id="loginSection" class="fixed inset-0 z-[100] bg-white flex items-center justify-center p-6 overflow-y-auto">
+    <div class="w-full max-w-md space-y-8 py-10">
+        <div class="text-center">
+            <h2 class="text-4xl font-extrabold text-emerald-600 mb-2">Remstore</h2>
+            <p id="authStatusText" class="text-gray-500 font-medium">Silahkan masuk ke akun anda</p>
+        </div>
+
+        <div class="space-y-4">
+            <div class="space-y-1">
+                <label class="text-sm font-bold text-gray-400 ml-2">Email Gmail</label>
+                <input type="email" id="logEmail" placeholder="nama@gmail.com" class="w-full p-4 rounded-2xl bg-gray-100 border-none outline-none focus:ring-2 focus:ring-emerald-500 transition-all">
+            </div>
+            <div class="space-y-1">
+                <label class="text-sm font-bold text-gray-400 ml-2">Password</label>
+                <input type="password" id="logPass" placeholder="••••••••" class="w-full p-4 rounded-2xl bg-gray-100 border-none outline-none focus:ring-2 focus:ring-emerald-500 transition-all">
             </div>
         </div>
+
+        <div class="space-y-3">
+            <button onclick="handleLogin()" id="btnLogin" class="w-full py-4 bg-emerald-500 text-white rounded-2xl font-bold shadow-lg shadow-emerald-200 hover:bg-emerald-600 transition-all">Masuk Sekarang</button>
+            
+            <div class="flex items-center gap-4 py-2">
+                <div class="flex-1 h-[1px] bg-gray-100"></div>
+                <span class="text-gray-300 text-xs font-bold">ATAU</span>
+                <div class="flex-1 h-[1px] bg-gray-100"></div>
+            </div>
+
+            <button onclick="handleRegister()" id="btnRegister" class="w-full py-4 bg-white text-emerald-600 border-2 border-emerald-500 rounded-2xl font-bold hover:bg-emerald-50 transition-all">Daftar Akun Baru</button>
+        </div>
+        
+        <p class="text-center text-xs text-gray-400 px-6">Dengan masuk, anda menyetujui syarat dan ketentuan Rembo Digital Store.</p>
     </div>
+</div>
 
     <div id="mainApp" class="h-full flex overflow-hidden hidden">
         <aside id="sidebar" class="fixed lg:static z-50 h-full w-72 bg-white border-r border-gray-100 flex flex-col transform -translate-x-full lg:translate-x-0 transition-transform">
@@ -93,27 +116,50 @@
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0d3VrbXltemF2a3Nsd3dveGhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1ODUyMDYsImV4cCI6MjA5MTE2MTIwNn0.veXgUwbVxQApM-AlKGQgSGqQlNvTVQOJ87YGWCWTl64";
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        async function handleAuth() {
-            const email = document.getElementById('logEmail').value;
-            const password = document.getElementById('logPass').value;
-            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-            
-            if (error) { // Jika belum punya akun, otomatis daftarkan
-                const { error: regErr } = await supabase.auth.signUp({ email, password });
-                if (regErr) return alert(regErr.message);
-                alert("Pendaftaran berhasil! Silahkan login.");
-            } else {
-                location.reload();
-            }
-        }
+        // --- FUNGSI LOGIN ---
+async function handleLogin() {
+    const email = document.getElementById('logEmail').value;
+    const password = document.getElementById('logPass').value;
+    const btn = document.getElementById('btnLogin');
 
-        supabase.auth.onAuthStateChange((event, session) => {
-            if (session) {
-                document.getElementById('loginSection').classList.add('hidden');
-                document.getElementById('mainApp').classList.remove('hidden');
-                loadProfile(session.user);
-            }
-        });
+    if (!email || !password) return alert("Isi email dan password!");
+
+    btn.disabled = true;
+    btn.innerText = "Mengecek Akun...";
+
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    
+    if (error) {
+        alert("Gagal Masuk: " + error.message);
+        btn.disabled = false;
+        btn.innerText = "Masuk Sekarang";
+    } else {
+        location.reload(); // Berhasil masuk
+    }
+}
+
+// --- FUNGSI DAFTAR ---
+async function handleRegister() {
+    const email = document.getElementById('logEmail').value;
+    const password = document.getElementById('logPass').value;
+    const btn = document.getElementById('btnRegister');
+
+    if (!email || !password) return alert("Isi email dan password untuk mendaftar!");
+    if (password.length < 6) return alert("Password minimal 6 karakter!");
+
+    btn.disabled = true;
+    btn.innerText = "Mendaftarkan...";
+
+    const { data, error } = await supabase.auth.signUp({ email, password });
+
+    if (error) {
+        alert("Gagal Daftar: " + error.message);
+    } else {
+        alert("Pendaftaran Berhasil! Sekarang silahkan klik tombol Masuk.");
+    }
+    btn.disabled = false;
+    btn.innerText = "Daftar Akun Baru";
+}
 
         async function loadProfile(user) {
             const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single();

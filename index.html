@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Remstore - SMM Panel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; }
+        .hidden { display: none !important; }
+        .sidebar-transition { transition: transform 0.3s ease-in-out; }
+        .active-menu { background-color: #f0fdf4; color: #10b981; font-weight: 700; }
+        .platform-btn:hover { border-color: #10b981; background-color: #f0fdf4; transform: translateY(-2px); transition: all 0.2s; }
+    </style>
+</head>
+<body class="h-screen flex overflow-hidden">
+
+    <div id="authSection" class="fixed inset-0 z-[100] bg-white flex items-center justify-center p-6 overflow-y-auto">
+        <div class="w-full max-w-md space-y-8">
+            <div class="text-center">
+                <h2 class="text-4xl font-extrabold text-emerald-600 italic">Remstore</h2>
+                <p id="authSubtitle" class="text-gray-400 font-bold uppercase tracking-widest text-[10px] mt-2">Silahkan Masuk</p>
+            </div>
+
+            <div id="formLogin" class="space-y-4">
+                <div class="space-y-1">
+                    <label class="text-[10px] font-bold text-gray-400 ml-2 uppercase">Gmail Akun</label>
+                    <input type="email" id="logEmail" placeholder="nama@gmail.com" class="w-full p-4 rounded-2xl bg-gray-100 border-none outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[10px] font-bold text-gray-400 ml-2 uppercase">Password</label>
+                    <input type="password" id="logPass" placeholder="••••••••" class="w-full p-4 rounded-2xl bg-gray-100 border-none outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+                <button onclick="handleLogin()" id="btnLogin" class="w-full py-4 bg-emerald-500 text-white rounded-2xl font-bold shadow-lg shadow-emerald-100">Masuk Sekarang</button>
+                <p class="text-center text-sm text-gray-500">Belum punya akun? <span onclick="switchAuth('daftar')" class="text-emerald-600 font-bold cursor-pointer underline">Daftar di sini</span></p>
+            </div>
+
+            <div id="formDaftar" class="space-y-4 hidden">
+                <input type="text" id="regName" placeholder="Nama Pengguna" class="w-full p-4 rounded-2xl bg-gray-100 border-none outline-none">
+                <input type="email" id="regEmail" placeholder="Gmail Aktif" class="w-full p-4 rounded-2xl bg-gray-100 border-none outline-none">
+                <input type="password" id="regPass" placeholder="Password (Min 6 Karakter)" class="w-full p-4 rounded-2xl bg-gray-100 border-none outline-none">
+                <input type="number" id="regPhone" placeholder="Nomor WhatsApp" class="w-full p-4 rounded-2xl bg-gray-100 border-none outline-none">
+                <button onclick="handleRegister()" id="btnRegister" class="w-full py-4 bg-emerald-600 text-white rounded-2xl font-bold">Buat Akun Sekarang</button>
+                <p class="text-center text-sm text-gray-500">Sudah punya akun? <span onclick="switchAuth('login')" class="text-emerald-600 font-bold cursor-pointer underline">Login di sini</span></p>
+            </div>
+            <p class="text-center text-[9px] text-gray-300 uppercase tracking-widest font-bold">Rembo Digital Store</p>
+        </div>
+    </div>
+
+    <aside id="sidebar" class="sidebar-transition fixed lg:static inset-y-0 left-0 z-50 w-72 bg-white border-r border-gray-100 flex flex-col transform -translate-x-full lg:translate-x-0">
+        <div class="p-6 flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center text-white font-bold text-xl">S</div>
+            <span class="font-bold text-xl tracking-tight">SMM Panel</span>
+        </div>
+        
+        <nav class="flex-1 px-4 space-y-1 overflow-y-auto">
+            <button onclick="changePage('dashboard')" class="nav-link active-menu w-full flex items-center gap-4 p-4 rounded-2xl transition-all">
+                <i data-lucide="layout-dashboard" class="w-5 h-5"></i> Dashboard
+            </button>
+            
+            <div>
+                <button onclick="toggleDropdown()" class="w-full flex items-center justify-between p-4 rounded-2xl text-gray-500 hover:bg-gray-50 transition-all">
+                    <div class="flex items-center gap-4"><i data-lucide="shopping-cart" class="w-5 h-5"></i> Pemesanan</div>
+                    <i id="dropIcon" data-lucide="chevron-down" class="w-4 h-4 transition-transform"></i>
+                </button>
+                <div id="dropMenu" class="hidden pl-12 pr-4 py-2 space-y-1">
+                    <button onclick="changePage('order-new')" class="w-full text-left p-3 text-sm text-gray-500 hover:text-emerald-600">Pesanan Baru</button>
+                    <button onclick="changePage('order-history')" class="w-full text-left p-3 text-sm text-gray-500 hover:text-emerald-600">Riwayat Pesanan</button>
+                </div>
+            </div>
+
+            <button onclick="changePage('deposit')" class="nav-link w-full flex items-center gap-4 p-4 rounded-2xl text-gray-500 hover:bg-gray-50 transition-all">
+                <i data-lucide="wallet" class="w-5 h-5"></i> Deposit
+            </button>
+            <button onclick="handleLogout()" class="w-full flex items-center gap-4 p-4 rounded-2xl text-red-500 hover:bg-red-50 transition-all">
+                <i data-lucide="log-out" class="w-5 h-5"></i> Keluar
+            </button>
+        </nav>
+    </aside>
+
+    <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <header class="h-20 bg-white border-b border-gray-100 flex items-center justify-between px-6 shrink-0">
+            <div class="flex items-center gap-4">
+                <button onclick="toggleSidebar()" class="p-2 bg-gray-50 rounded-xl text-gray-600"><i data-lucide="menu"></i></button>
+                <h1 id="pageTitle" class="font-bold text-xl text-gray-800">Dashboard</h1>
+            </div>
+            <div class="flex items-center gap-3">
+                <div class="bg-emerald-50 text-emerald-600 px-4 py-2 rounded-full font-bold text-sm" id="topBalance">Rp 0</div>
+                <div class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-gray-400"><i data-lucide="user"></i></div>
+            </div>
+        </header>
+
+        <main class="flex-1 overflow-y-auto p-6">
+            
+            <div id="page-dashboard" class="space-y-6">
+                <div class="bg-emerald-500 p-10 rounded-[40px] text-white shadow-xl shadow-emerald-100 relative overflow-hidden">
+                    <p class="opacity-80 font-medium">👋 Selamat datang kembali!</p>
+                    <h2 class="text-3xl font-black mt-1">Dashboard Overview</h2>
+                </div>
+                
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+                        <p class="text-gray-400 text-[10px] font-bold uppercase">Total Pesanan</p>
+                        <p class="text-3xl font-black mt-2">0</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+                        <p class="text-gray-400 text-[10px] font-bold uppercase">Saldo Anda</p>
+                        <p id="cardBalance" class="text-3xl font-black mt-2 text-emerald-600">Rp 0</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="page-order-new" class="hidden space-y-6 max-w-4xl mx-auto">
+                <div class="bg-white p-8 rounded-[40px] shadow-sm border border-gray-50">
+                    <h3 class="font-bold text-emerald-600 mb-6 flex items-center gap-2"><span class="w-2 h-2 bg-emerald-500 rounded-full"></span> Pilih Platform</h3>
+                    <div class="grid grid-cols-3 md:grid-cols-6 gap-4">
+                        <button onclick="selectPlat('ig')" class="platform-btn p-4 border border-gray-100 rounded-3xl flex flex-col items-center gap-2 bg-white text-xs font-bold text-gray-400">📷 Instagram</button>
+                        <button onclick="selectPlat('tt')" class="platform-btn p-4 border border-gray-100 rounded-3xl flex flex-col items-center gap-2 bg-white text-xs font-bold text-gray-400">🎵 TikTok</button>
+                        <button onclick="selectPlat('tg')" class="platform-btn p-4 border border-gray-100 rounded-3xl flex flex-col items-center gap-2 bg-white text-xs font-bold text-gray-400">✈️ Telegram</button>
+                    </div>
+                </div>
+                
+                <div id="orderForm" class="hidden bg-white p-8 rounded-[40px] shadow-sm border border-gray-50 space-y-4">
+                    <select id="svcSel" class="w-full p-4 rounded-2xl bg-gray-50 border-none outline-none font-bold text-sm text-gray-500">
+                        <option>Pilih Layanan...</option>
+                        <option>Followers Instagram HQ - Rp 15.000</option>
+                    </select>
+                    <input type="text" id="targetInp" placeholder="Link / Username" class="w-full p-4 rounded-2xl bg-gray-50 border-none outline-none">
+                    <input type="number" id="qtyInp" placeholder="Masukkan Jumlah" class="w-full p-4 rounded-2xl bg-gray-50 border-none outline-none">
+                    <div class="p-4 bg-emerald-50 rounded-2xl flex justify-between items-center"><span class="font-bold text-emerald-800">Total Harga</span><span class="text-xl font-black text-emerald-600">Rp 0</span></div>
+                    <button onclick="submitOrder()" class="w-full py-4 bg-emerald-500 text-white rounded-2xl font-bold">Pesan Sekarang</button>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        // --- CONFIG ---
+        const SB_URL = "https://rtwukmymzavkslwwoxhs.supabase.co";
+        const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0d3VrbXltemF2a3Nsd3dveGhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1ODUyMDYsImV4cCI6MjA5MTE2MTIwNn0.veXgUwbVxQApM-AlKGQgSGqQlNvTVQOJ87YGWCWTl64";
+        const client = supabase.createClient(SB_URL, SB_KEY);
+
+        // --- UI FUNCTIONS ---
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('-translate-x-full');
+        }
+
+        function toggleDropdown() {
+            const menu = document.getElementById('dropMenu');
+            const icon = document.getElementById('dropIcon');
+            menu.classList.toggle('hidden');
+            icon.style.transform = menu.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)';
+        }
+
+        function switchAuth(mode) {
+            document.getElementById('formLogin').classList.toggle('hidden', mode === 'daftar');
+            document.getElementById('formDaftar').classList.toggle('hidden', mode === 'login');
+            document.getElementById('authSubtitle').innerText = mode === 'daftar' ? "Daftar Akun Baru" : "Silahkan Masuk";
+        }
+
+        function changePage(pageId) {
+            document.querySelectorAll('[id^="page-"]').forEach(p => p.classList.add('hidden'));
+            document.getElementById('page-' + pageId).classList.remove('hidden');
+            document.getElementById('pageTitle').innerText = pageId.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+            
+            // Sidebar Mobile Close
+            if(window.innerWidth < 1024) toggleSidebar();
+        }
+
+        function selectPlat(p) {
+            document.getElementById('orderForm').classList.remove('hidden');
+        }
+
+        // --- AUTH & DATA ---
+        async function handleLogin() {
+            const email = document.getElementById('logEmail').value;
+            const password = document.getElementById('logPass').value;
+            const btn = document.getElementById('btnLogin');
+            btn.innerText = "Memproses..."; btn.disabled = true;
+
+            const { data, error } = await client.auth.signInWithPassword({ email, password });
+            if(error) { alert("Akun tidak ditemukan!"); btn.innerText = "Masuk Sekarang"; btn.disabled = false; }
+            else { location.reload(); }
+        }
+
+        async function handleRegister() {
+            const name = document.getElementById('regName').value;
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPass').value;
+            const phone = document.getElementById('regPhone').value;
+
+            const { data, error } = await client.auth.signUp({
+                email, password,
+                options: { data: { full_name: name, phone: phone } }
+            });
+            if(error) alert(error.message);
+            else { alert("Pendaftaran Berhasil! Silahkan Login."); switchAuth('login'); }
+        }
+
+        client.auth.onAuthStateChange((event, session) => {
+            if (session) {
+                document.getElementById('authSection').classList.add('hidden');
+                loadData(session.user);
+            }
+        });
+
+        async function loadData(user) {
+            const { data } = await client.from('profiles').select('*').eq('id', user.id).single();
+            if(data) {
+                const b = `Rp ${data.balance.toLocaleString('id')}`;
+                document.getElementById('topBalance').innerText = b;
+                document.getElementById('cardBalance').innerText = b;
+            }
+        }
+
+        async function handleLogout() { await client.auth.signOut(); location.reload(); }
+
+        lucide.createIcons();
+    </script>
+</body>
+</html>

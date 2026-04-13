@@ -1059,8 +1059,8 @@ async function confirmPayment() {
 
         // 2. Kirim Foto + Data ke API Jembatan Vercel
         const formData = new FormData();
-        formData.append('chat_id', '6161828437'); 
         formData.append('photo', fileInput.files[0]);
+        formData.append('chat_id', '6161828437'); 
         formData.append('caption', `🚀 *ORDER BARU MASUK!*\n---\n👤 *User:* ${record.user_name}\n📦 *Layanan:* ${record.service}\n💰 *Total:* ${formatRupiah(record.price)}\n📍 *Target:* \`${record.target}\``);
         formData.append('parse_mode', 'Markdown');
 

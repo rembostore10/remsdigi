@@ -6,9 +6,9 @@ export default async function handler(req, res) {
 
   // AUTH KE MIDTRANS (Ganti dengan Server Key Bos nanti)
   // Format: "Basic BASE64(ServerKey:)"
-  const authString = Buffer.from("SB-Mid-server-GANTI-DENGAN-KEY-BOS:").toString('base64');
+  const authString = Buffer.from("Mid-client-HrGGI6LKuehJJmyN").toString('base64');
 
-  const response = await fetch('https://app.sandbox.midtrans.com/snap/v1/transactions', {
+  const response = await fetch('https://app.midtrans.com/snap/v1/transactions', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

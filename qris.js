@@ -11,7 +11,7 @@ const QRIS_LINKS = {
   20000:'https://qris.example.com/pay/20000',
   25000:'https://qris.example.com/pay/25000',
   26500:'https://qris.example.com/pay/26500',
-  27000:'https://qris.example.com/pay/27000',
+  28000:'https://files.catbox.moe/5prwgi.png',
   35000:'https://qris.example.com/pay/35000',
   38000:'https://qris.example.com/pay/38000',
   40000:'https://qris.example.com/pay/40000',

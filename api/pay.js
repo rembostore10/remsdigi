@@ -11,7 +11,7 @@ export default async function handler(req, res) {
   const authString = Buffer.from(serverKey + ":").toString('base64');
 
   try {
-    const response = await fetch('https://app.midtrans.com/snap/v1/transactions', {
+    const response = await fetch('https://app.sandbox.midtrans.com/snap/v1/transactions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

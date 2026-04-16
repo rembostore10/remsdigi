@@ -221,7 +221,264 @@
       }
     ]
   },
-  "e-Wallet": {},
+  "e-Wallet": {
+    "Dana": [
+      {
+        "n": "2k",
+        "p": 3000
+      },
+      {
+        "n": "3k",
+        "p": 4000
+      },
+      {
+        "n": "4k",
+        "p": 5000
+      },
+      {
+        "n": "5k",
+        "p": 6000
+      },
+      {
+        "n": "10k",
+        "p": 11000
+      },
+      {
+        "n": "15k",
+        "p": 16000
+      },
+      {
+        "n": "20k",
+        "p": 21000
+      },
+      {
+        "n": "25k",
+        "p": 26000
+      },
+      {
+        "n": "30k",
+        "p": 32000
+      },
+      {
+        "n": "35k",
+        "p": 37000
+      },
+      {
+        "n": "40k",
+        "p": 42000
+      },
+      {
+        "n": "45k",
+        "p": 47000
+      },
+      {
+        "n": "50k",
+        "p": 52000
+      }
+    ],
+    "Gopay": [
+      {
+        "n": "2k",
+        "p": 3200
+      },
+      {
+        "n": "3k",
+        "p": 4200
+      },
+      {
+        "n": "4k",
+        "p": 5200
+      },
+      {
+        "n": "5k",
+        "p": 6200
+      },
+      {
+        "n": "10k",
+        "p": 11200
+      },
+      {
+        "n": "15k",
+        "p": 16200
+      },
+      {
+        "n": "20k",
+        "p": 21200
+      },
+      {
+        "n": "25k",
+        "p": 26200
+      },
+      {
+        "n": "30k",
+        "p": 32200
+      },
+      {
+        "n": "35k",
+        "p": 37200
+      },
+      {
+        "n": "40k",
+        "p": 42200
+      },
+      {
+        "n": "45k",
+        "p": 47200
+      },
+      {
+        "n": "50k",
+        "p": 52200
+      }
+    ],
+    "Ovo": [
+      {
+        "n": "belum admin 10k",
+        "p": 11000
+      },
+      {
+        "n": "belum admin 15k",
+        "p": 16000
+      },
+      {
+        "n": "belum admin 20k",
+        "p": 21000
+      },
+      {
+        "n": "belum admin 25k",
+        "p": 26000
+      },
+      {
+        "n": "belum admin 30k",
+        "p": 31000
+      },
+      {
+        "n": "belum admin 35k",
+        "p": 36000
+      },
+      {
+        "n": "belum admin 40k",
+        "p": 41000
+      },
+      {
+        "n": "belum admin 45k",
+        "p": 46000
+      },
+      {
+        "n": "belum admin 50k",
+        "p": 52000
+      },
+      {
+        "n": "include admin 10k",
+        "p": 12000
+      },
+      {
+        "n": "include admin 15k",
+        "p": 17000
+      },
+      {
+        "n": "include admin 20k",
+        "p": 22000
+      },
+      {
+        "n": "include admin 25k",
+        "p": 27000
+      },
+      {
+        "n": "include admin 30k",
+        "p": 32000
+      },
+      {
+        "n": "include admin 35k",
+        "p": 37000
+      },
+      {
+        "n": "include admin 40k",
+        "p": 42000
+      },
+      {
+        "n": "include admin 45k",
+        "p": 47000
+      },
+      {
+        "n": "include admin 50k",
+        "p": 52000
+      }
+    ],
+    "Shopeepay": [
+      {
+        "n": "belum admin 5k",
+        "p": 6500
+      },
+      {
+        "n": "belum admin 6k",
+        "p": 7500
+      },
+      {
+        "n": "belum admin 7k",
+        "p": 8500
+      },
+      {
+        "n": "belum admin 8k",
+        "p": 9500
+      },
+      {
+        "n": "belum admin 9k",
+        "p": 10500
+      },
+      {
+        "n": "belum admin 10k",
+        "p": 11500
+      },
+      {
+        "n": "belum admin 20k",
+        "p": 21500
+      },
+      {
+        "n": "belum admin 30k",
+        "p": 31500
+      },
+      {
+        "n": "belum admin 40k",
+        "p": 41500
+      },
+      {
+        "n": "include admin 10k",
+        "p": 12000
+      },
+      {
+        "n": "include admin 15k",
+        "p": 17000
+      },
+      {
+        "n": "include admin 20k",
+        "p": 22000
+      },
+      {
+        "n": "include admin 25k",
+        "p": 27000
+      },
+      {
+        "n": "include admin 30k",
+        "p": 32000
+      },
+      {
+        "n": "include admin 35k",
+        "p": 37000
+      },
+      {
+        "n": "include admin 40k",
+        "p": 42000
+      },
+      {
+        "n": "include admin 45k",
+        "p": 47000
+      },
+      {
+        "n": "include admin 50k",
+        "p": 52000
+      }
+    ]
+  },
   "Game": {},
   "Aplikasi Premium": {},
   "Suntik Sosmed": {

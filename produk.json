@@ -633,7 +633,60 @@
       }
     ]
   },
-  "Aplikasi Premium": {},
+  "Aplikasi Premium": {
+    "Alight Motion": [
+      {
+        "n": "1 Tahun Acc Buyer",
+        "p": 2000
+      },
+      {
+        "n": "1 Tahun Acc Generator",
+        "p": 3800
+      },
+      {
+        "n": "1 Tahun Acc Seller",
+        "p": 12000
+      }
+    ],
+    "Canva": [
+      {
+        "n": "1 Bulan",
+        "p": 4000
+      },
+      {
+        "n": "1 Tahun Rw",
+        "p": 10000
+      },
+      {
+        "n": "Head 1 Bulan",
+        "p": 8000
+      },
+      {
+        "n": "Edu Lifetime",
+        "p": 3400
+      }
+    ],
+    "Capcut": [
+      {
+        "n": "1 Bulan Shar 3u",
+        "p": 8500
+      },
+      {
+        "n": "1 Bulan Private 35d",
+        "p": 14500
+      },
+      {
+        "n": "1 Bulan Private 42d",
+        "p": 15000
+      }
+    ],
+    "Capcur": [
+      {
+        "n": "7 Hari Private",
+        "p": 4500
+      }
+    ]
+  },
   "Suntik Sosmed": {
     "Instagram": [
       {

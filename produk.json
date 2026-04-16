@@ -17,6 +17,7 @@
       }
     ]
   },
+  "Sms": {},
   "e-Wallet": {
     "DANA": [
       {
@@ -33,4 +34,9 @@
       "Likes"
     ]
   },
+  "Axis": {},
+  "Byu": {},
+  "Telkomsel": {},
+  "Xl": {},
+  "Smartfren": {}
 }

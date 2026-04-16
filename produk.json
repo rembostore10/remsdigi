@@ -493,5 +493,13 @@
   "Byu": {},
   "Telkomsel": {},
   "Xl": {},
-  "Smartfren": {}
+  "Smartfren": {},
+  "Pln": {
+    "test": [
+      {
+        "n": "testing",
+        "p": 1000
+      }
+    ]
+  }
 }

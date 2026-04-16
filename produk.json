@@ -124,5 +124,17 @@
   "Byu": {},
   "Telkomsel": {},
   "Xl": {},
-  "Smartfren": {}
+  "Smartfren": {},
+  "suntik sosmed": {
+    "Followers": [
+      {
+        "n": "5k",
+        "p": 6500
+      },
+      {
+        "n": "10k",
+        "p": 10500
+      }
+    ]
+  }
 }

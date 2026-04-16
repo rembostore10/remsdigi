@@ -515,7 +515,82 @@
       }
     ]
   },
-  "Game": {},
+  "Game": {
+    "Mobile Legends": [
+      {
+        "n": "3 Diamond",
+        "p": 1371
+      },
+      {
+        "n": "5 Diamond",
+        "p": 1623
+      },
+      {
+        "n": "12 Diamond",
+        "p": 4423
+      },
+      {
+        "n": "19 Diamond",
+        "p": 6223
+      },
+      {
+        "n": "28 Diamond",
+        "p": 8600
+      },
+      {
+        "n": "44 Diamond",
+        "p": 12400
+      },
+      {
+        "n": "59 Diamond",
+        "p": 16200
+      },
+      {
+        "n": "85 Diamond",
+        "p": 22850
+      },
+      {
+        "n": "170 Diamond",
+        "p": 44700
+      },
+      {
+        "n": "240 Diamond",
+        "p": 62750
+      },
+      {
+        "n": "296 Diamond",
+        "p": 77000
+      },
+      {
+        "n": "408 Diamond",
+        "p": 105500
+      },
+      {
+        "n": "568 Diamond",
+        "p": 143500
+      },
+      {
+        "n": "875 Diamond",
+        "p": 219500
+      },
+      {
+        "n": "Twilight Pass",
+        "p": 215000
+      },
+      {
+        "n": "Weekly Dm Pass",
+        "p": 28550
+      },
+      {
+        "n": "Weekly Elite Pack",
+        "p": 21000
+      },
+      {
+        "n": "Monthly Elite Pack",
+        "p": 107000
+      }
+    ]
+  },
   "Aplikasi Premium": {},
   "Suntik Sosmed": {
     "Instagram": [

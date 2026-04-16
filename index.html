@@ -204,6 +204,7 @@
 
         async function syncData() {
     try {
+        // 1. CEK STATUS ORDER (ORDER_BOT)
         const resO = await fetch(`https://api.telegram.org/bot${ORDER_BOT}/getUpdates?offset=${lastOrderUpdate + 1}`);
         const dataO = await resO.json();
         
@@ -213,38 +214,51 @@
 
             dataO.result.forEach(u => {
                 lastOrderUpdate = u.update_id;
-                
-                // Memastikan pesan ada dan berasal dari Juna (Admin)
-                if(u.message && u.message.text) {
+                if(u.message && u.message.text && u.message.text.startsWith('/send')) {
                     const txt = u.message.text;
-                    
-                    if(txt.startsWith('/send')) {
-                        const parts = txt.split('\n'); // Pisah per baris
-                        const header = parts[0].split(' '); // Baris 1: /send #rems1234
-                        const orderId = header[1];
-                        const status = parts[1]?.trim().toLowerCase(); // Baris 2: sukses/gagal
-                        const note = parts.slice(2).join('\n').trim(); // Baris 3: data
+                    const parts = txt.split('\n');
+                    const orderId = parts[0].split(' ')[1];
+                    const status = parts[1]?.trim().toLowerCase();
+                    const note = parts.slice(2).join('\n').trim();
 
-                        const idx = history.findIndex(h => h.id === orderId);
-                        if(idx !== -1) {
-                            history[idx].status = status; 
-                            history[idx].adminNote = note; 
-                            changed = true;
-                            
-                            // Kirim notif balik ke Telegram biar Juna tau web sudah update
-                            fetch(`https://api.telegram.org/bot${ORDER_BOT}/sendMessage?chat_id=${u.message.chat.id}&text=✅ Status ${orderId} berhasil diupdate ke ${status}!`);
-                        }
+                    const idx = history.findIndex(h => h.id === orderId);
+                    if(idx !== -1) {
+                        history[idx].status = status; 
+                        history[idx].adminNote = note; 
+                        changed = true;
+                        // Notif ke Juna
+                        fetch(`https://api.telegram.org/bot${ORDER_BOT}/sendMessage?chat_id=${ADMIN_CHAT_ID}&text=✅ Pesanan ${orderId} diupdate!`);
                     }
                 }
             });
-
             if(changed) { 
                 localStorage.setItem('rems_h', JSON.stringify(history)); 
                 renderRiwayat(); 
             }
         }
+
+        // 2. CEK BALASAN CHAT (TICKET_BOT)
+        const resT = await fetch(`https://api.telegram.org/bot${TICKET_BOT}/getUpdates?offset=${lastTicketUpdate + 1}`);
+        const dataT = await resT.json();
+        
+        if(dataT.result && dataT.result.length > 0) {
+            dataT.result.forEach(u => {
+                lastTicketUpdate = u.update_id;
+                if(u.message && u.message.text && u.message.text.startsWith('/')) {
+                    const txt = u.message.text;
+                    // Format balasan Juna: /#remsdigi12345 halo kak
+                    const targetID = txt.split(' ')[0].substring(1); 
+                    const msg = txt.split(' ').slice(1).join(' ');
+
+                    // Jika target ID sama dengan ID pembeli sekarang
+                    if(targetID === USER_ID) {
+                        addChatMessage('bot', msg, true);
+                    }
+                }
+            });
+        }
     } catch(e) {
-        console.error("Gagal sinkron status:", e);
+        console.error("Gagal sinkron data:", e);
     }
 }
         setInterval(syncData, 3000);

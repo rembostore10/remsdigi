@@ -1,43 +1,10 @@
 {
-  "Pulsa": {
-    "Telkomsel": [
-      {
-        "n": "5k",
-        "p": 7000
-      },
-      {
-        "n": "10k",
-        "p": 12000
-      }
-    ],
-    "axis": [
-      {
-        "n": "5k",
-        "p": 6000
-      },
-      {
-        "n": "5k",
-        "p": 7000
-      }
-    ]
-  },
+  "Pulsa": {},
   "Sms": {},
-  "e-Wallet": {
-    "DANA": [
-      {
-        "n": "10k",
-        "p": 12500
-      }
-    ]
-  },
+  "e-Wallet": {},
   "Game": {},
   "Aplikasi Premium": {},
-  "Suntik Sosmed": {
-    "Instagram": [
-      "Followers",
-      "Likes"
-    ]
-  },
+  "Suntik Sosmed": {},
   "Axis": {},
   "Byu": {},
   "Telkomsel": {},

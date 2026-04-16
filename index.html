@@ -193,7 +193,8 @@
         document.getElementById('displayChatID').innerText = "ID: " + USER_ID;
 
         let orderData = { id: '', service: '', plan: '', price: 0 };
-        let lastOrderUpdate = 0; let lastTicketUpdate = 0;
+let lastOrderUpdate = parseInt(localStorage.getItem('last_o_id') || '0');
+let lastTicketUpdate = parseInt(localStorage.getItem('last_t_id') || '0');
         function saveToLocal(o) { let h = JSON.parse(localStorage.getItem('rems_h') || '[]'); h.unshift(o); localStorage.setItem('rems_h', JSON.stringify(h)); }
         function getHistory() { return JSON.parse(localStorage.getItem('rems_h') || '[]'); }
         function saveChat(role, text) {
@@ -235,6 +236,7 @@
         }
     }
 });
+            localStorage.setItem('last_o_id', lastOrderUpdate);
             if(changed) { 
                 localStorage.setItem('rems_h', JSON.stringify(history)); 
                 renderRiwayat(); 
@@ -260,6 +262,7 @@
                     }
                 }
             });
+            localStorage.setItem('last_o_id', lastOrderUpdate);
         }
     } catch(e) {
         console.error("Gagal sinkron data:", e);

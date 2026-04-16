@@ -189,7 +189,7 @@
 
         let orderData = { id: '', service: '', plan: '', price: 0 };
         let lastOrderUpdate = 0; let lastTicketUpdate = 0;
-        const sosmedRates = { "Followers": 35, "Likes": 20, "Views": 10 };
+        const sosmedRates = { "Followers": 35, "Likes": 2, "Views": 1 };
 
         function saveToLocal(o) { let h = JSON.parse(localStorage.getItem('rems_h') || '[]'); h.unshift(o); localStorage.setItem('rems_h', JSON.stringify(h)); }
         function getHistory() { return JSON.parse(localStorage.getItem('rems_h') || '[]'); }

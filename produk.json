@@ -199,7 +199,28 @@
       }
     ]
   },
-  "Sms": {},
+  "Sms": {
+    "Axis": [
+      {
+        "n": "Telp 30 Menit All 7 Hari",
+        "p": 10500
+      },
+      {
+        "n": "Telp 100 Menit All 30 Hari",
+        "p": 26500
+      }
+    ],
+    "Byu": [
+      {
+        "n": "Telp 50 Menit All 1 Hari",
+        "p": 10000
+      },
+      {
+        "n": "Telp 100 Menit All 3 Hari",
+        "p": 12500
+      }
+    ]
+  },
   "e-Wallet": {},
   "Game": {},
   "Aplikasi Premium": {},

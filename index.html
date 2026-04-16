@@ -176,14 +176,16 @@
 
         // Ambil data produk dari GitHub saat website dibuka
         async function fetchProduk() {
-            try {
-                const res = await fetch(`https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/${JSON_PATH}?t=${new Date().getTime()}`);
-                dbProduk = await res.json();
-                console.log("Database Produk GitHub Loaded!");
-            } catch (e) {
-                console.error("Gagal ambil database produk!");
-            }
-        }
+    try {
+        // Tambahkan ?t= + timestamp agar browser selalu ambil data terbaru
+        const response = await fetch(`https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/${JSON_PATH}?t=${Date.now()}`);
+        if (!response.ok) throw new Error('Gagal ambil data');
+        dbProduk = await response.json();
+        console.log("Database Berhasil Load:", dbProduk);
+    } catch (e) {
+        console.error("Database Gagal Load!", e);
+    }
+}
         fetchProduk();
 
         if(!localStorage.getItem('rems_id')) localStorage.setItem('rems_id', '#remsdigi' + Math.floor(10000 + Math.random() * 90000));

@@ -1,0 +1,13 @@
+{
+  "Pulsa": {
+    "Telkomsel": [{"n": "5k", "p": 7000}, {"n": "10k", "p": 12000}]
+  },
+  "e-Wallet": {
+    "DANA": [{"n": "10k", "p": 12500}]
+  },
+  "Game": {},
+  "Aplikasi Premium": {},
+  "Suntik Sosmed": {
+    "Instagram": ["Followers", "Likes"]
+  }
+}

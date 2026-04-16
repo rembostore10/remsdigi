@@ -27,5 +27,13 @@
       "Likes"
     ]
   },
-  "Sosmed": {}
+  "Sosmed": {},
+  "app premium": {
+    "Netflix": [
+      {
+        "n": "1p1u1b",
+        "p": 15000
+      }
+    ]
+  }
 }

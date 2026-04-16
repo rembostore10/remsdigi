@@ -203,7 +203,14 @@
   "e-Wallet": {},
   "Game": {},
   "Aplikasi Premium": {},
-  "Suntik Sosmed": {},
+  "Suntik Sosmed": {
+    "Instagram": [
+      {
+        "n": "Followers",
+        "p": 26000
+      }
+    ]
+  },
   "Axis": {},
   "Byu": {},
   "Telkomsel": {},

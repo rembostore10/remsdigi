@@ -316,11 +316,13 @@
     if(!app) { vb.innerHTML = ''; ib.classList.add('hidden'); return; }
 
     if(type === "Suntik Sosmed") {
-        // Mengambil data varian (Followers/Likes/dll) dari produk.json
+        // Ambil data dari JSON Juna
+        const listLayanan = dbProduk[type][app]; 
+        
         vb.innerHTML = `
             <select id="sCat" onchange="updPriceSos()" class="input-styled mt-2 font-bold text-brand">
                 <option value="">-- Pilih Layanan --</option>
-                ${dbProduk[type][app].map(v => `<option value="${v.p}">${v.n}</option>`).join('')}
+                ${listLayanan.map(v => `<option value="${v.p}">${v.n}</option>`).join('')}
             </select>
             <input type="number" id="sQty" placeholder="Jumlah (Minimal 10)" oninput="updPriceSos()" class="input-styled mt-2">
             <div class="p-4 bg-teal-50 rounded-xl text-center border-2 border-dashed border-teal-200 mt-2">
@@ -328,8 +330,9 @@
             </div>`;
         ib.innerHTML = `<input id="uT" placeholder="Link Profil / Username" class="input-styled mt-2">`;
     } else {
-        // Bagian untuk Pulsa/Game tetap sama seperti sebelumnya
+        // Pulsa/Game/Premium tetap
         vb.innerHTML = `<select id="selVar" class="input-styled mt-2 font-bold text-brand">
+            <option value="">-- Pilih Varian --</option>
             ${dbProduk[type][app].map(v => `<option value="${v.p}">${v.n} - Rp${v.p.toLocaleString()}</option>`).join('')}
         </select>`;
         let ph = "ID / Nomor Tujuan";
@@ -340,14 +343,13 @@
 }
 
         function updPriceSos() {
-    const pricePerThousand = document.getElementById('sCat').value; // Ini mengambil nilai "p" dari JSON
-    const qty = document.getElementById('sQty').value || 0;
+    const sCat = document.getElementById('sCat');
+    const pricePerThousand = parseFloat(sCat.value); // Ambil harga per 1000 dari value option
+    const qty = parseInt(document.getElementById('sQty').value) || 0;
     
-    if (pricePerThousand && qty) {
+    if (!isNaN(pricePerThousand) && qty > 0) {
         // Rumus: (Harga JSON / 1000) * Jumlah Input
-        const rate = pricePerThousand / 1000;
-        const total = qty >= 10 ? Math.ceil(qty * rate) : 0;
-        
+        const total = Math.ceil((pricePerThousand / 1000) * qty);
         document.getElementById('sosPrice').innerText = "Total: Rp" + total.toLocaleString();
     } else {
         document.getElementById('sosPrice').innerText = "Total: Rp0";
@@ -355,26 +357,31 @@
 }
 
         function goToPayment() {
-            orderData.id = "#rems" + Math.floor(1000 + Math.random() * 9000);
-            const target = document.getElementById('uT')?.value || document.getElementById('uTarget')?.value;
-            if(!target) return alert("Lengkapi data tujuan!");
-            
-if(orderData.service === "Suntik Sosmed") {
-    const qty = document.getElementById('sQty').value;
-    const pricePerThousand = document.getElementById('sCat').value;
-    const selCatName = document.getElementById('sCat').options[document.getElementById('sCat').selectedIndex].text;
-    
-    orderData.price = Math.ceil(qty * (pricePerThousand / 1000));
-    orderData.plan = document.getElementById('selApp').value + " " + qty + " " + selCatName;
-} else {
-                const selVar = document.getElementById('selVar');
-                orderData.price = selVar.value;
-                orderData.plan = document.getElementById('selApp').value + " - " + selVar.options[selVar.selectedIndex].text.split(' -')[0];
-            }
-            document.getElementById('finalPrice').innerText = "Rp" + parseInt(orderData.price).toLocaleString();
-            document.getElementById('orderStep1').classList.add('hidden');
-            document.getElementById('orderStep2').classList.remove('hidden');
-        }
+    orderData.id = "#rems" + Math.floor(1000 + Math.random() * 9000);
+    const target = document.getElementById('uT')?.value;
+    if(!target) return alert("Lengkapi data tujuan!");
+
+    if(orderData.service === "Suntik Sosmed") {
+        const sCat = document.getElementById('sCat');
+        const qty = parseInt(document.getElementById('sQty').value) || 0;
+        const pricePerThousand = parseFloat(sCat.value);
+        const selCatName = sCat.options[sCat.selectedIndex].text;
+
+        if(qty < 10) return alert("Minimal order 10!");
+
+        orderData.price = Math.ceil((pricePerThousand / 1000) * qty);
+        orderData.plan = document.getElementById('selApp').value + " " + qty + " " + selCatName;
+    } else {
+        const selVar = document.getElementById('selVar');
+        if(!selVar.value) return alert("Pilih varian!");
+        orderData.price = parseInt(selVar.value);
+        orderData.plan = document.getElementById('selApp').value + " - " + selVar.options[selVar.selectedIndex].text.split(' -')[0];
+    }
+
+    document.getElementById('finalPrice').innerText = "Rp" + orderData.price.toLocaleString();
+    document.getElementById('orderStep1').classList.add('hidden');
+    document.getElementById('orderStep2').classList.remove('hidden');
+}
 
         async function sendOrder() {
             const f = document.getElementById('proofImg').files[0]; if(!f) return alert("Upload bukti bayar!");

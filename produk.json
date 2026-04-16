@@ -215,6 +215,12 @@
         "n": "Followers",
         "p": 5000
       }
+    ],
+    "Facebook": [
+      {
+        "n": "Followers",
+        "p": 4000
+      }
     ]
   },
   "Axis": {},

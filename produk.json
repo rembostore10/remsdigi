@@ -125,16 +125,5 @@
   "Telkomsel": {},
   "Xl": {},
   "Smartfren": {},
-  "suntik sosmed": {
-    "Followers": [
-      {
-        "n": "5k",
-        "p": 6500
-      },
-      {
-        "n": "10k",
-        "p": 10500
-      }
-    ]
-  }
+  "suntik sosmed": {}
 }

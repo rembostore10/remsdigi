@@ -27,12 +27,5 @@
       "Likes"
     ]
   },
-  "Sosmed": {
-    "Followers": [
-      {
-        "n": "100",
-        "p": 5000
-      }
-    ]
-  }
+  "Sosmed": {}
 }

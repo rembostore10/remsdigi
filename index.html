@@ -213,24 +213,28 @@
             let changed = false;
 
             dataO.result.forEach(u => {
-                lastOrderUpdate = u.update_id;
-                if(u.message && u.message.text && u.message.text.startsWith('/send')) {
-                    const txt = u.message.text;
-                    const parts = txt.split('\n');
-                    const orderId = parts[0].split(' ')[1];
-                    const status = parts[1]?.trim().toLowerCase();
-                    const note = parts.slice(2).join('\n').trim();
+    lastOrderUpdate = u.update_id;
+    if(u.message && u.message.text && u.message.text.startsWith('/send')) {
+        const txt = u.message.text;
+        const parts = txt.split('\n');
+        const orderId = parts[0].split(' ')[1]; // Mengambil #remsXXXX
+        const status = parts[1]?.trim().toLowerCase();
+        const note = parts.slice(2).join('\n').trim();
 
-                    const idx = history.findIndex(h => h.id === orderId);
-                    if(idx !== -1) {
-                        history[idx].status = status; 
-                        history[idx].adminNote = note; 
-                        changed = true;
-                        // Notif ke Juna
-                        fetch(`https://api.telegram.org/bot${ORDER_BOT}/sendMessage?chat_id=${ADMIN_CHAT_ID}&text=✅ Pesanan ${orderId} diupdate!`);
-                    }
-                }
-            });
+        const idx = history.findIndex(h => h.id === orderId);
+        
+        if(idx !== -1) {
+            history[idx].status = status; 
+            history[idx].adminNote = note; 
+            changed = true;
+            // Jika berhasil
+            fetch(`https://api.telegram.org/bot${ORDER_BOT}/sendMessage?chat_id=${ADMIN_CHAT_ID}&text=✅ Berhasil! Web ${orderId} sudah jadi ${status}.`);
+        } else {
+            // JIKA GAGAL, Bot bakal kasih tau alasannya ke Juna
+            fetch(`https://api.telegram.org/bot${ORDER_BOT}/sendMessage?chat_id=${ADMIN_CHAT_ID}&text=❌ Gagal! ID ${orderId} tidak ditemukan di Riwayat HP ini.`);
+        }
+    }
+});
             if(changed) { 
                 localStorage.setItem('rems_h', JSON.stringify(history)); 
                 renderRiwayat(); 

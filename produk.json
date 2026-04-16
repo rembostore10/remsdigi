@@ -494,12 +494,5 @@
   "Telkomsel": {},
   "Xl": {},
   "Smartfren": {},
-  "Pln": {
-    "test": [
-      {
-        "n": "testing",
-        "p": 1000
-      }
-    ]
-  }
+  "Pln": {}
 }

@@ -901,7 +901,46 @@
       }
     ]
   },
-  "Axis": {},
+  "Axis": {
+    "Voucher Aigo Mini": [
+      {
+        "n": "5GB + BONUS AIGO 1 HARI",
+        "p": 7950
+      },
+      {
+        "n": "5GB + BONUS AIGO 2 HARI",
+        "p": 9870
+      },
+      {
+        "n": "5GB ALL + BONUS AIGO 3 HARI",
+        "p": 12397
+      },
+      {
+        "n": "2GB + BONUS AIGO 5 HARI",
+        "p": 15600
+      },
+      {
+        "n": "2GB + 10GB OBOR 5 HARI",
+        "p": 24000
+      },
+      {
+        "n": "3GB + BONUS AIGO 7 HARI",
+        "p": 14800
+      },
+      {
+        "n": "10GB + BONUS AIGO 7 HARI",
+        "p": 23990
+      },
+      {
+        "n": "5GB + BONUS AIGO 14 HARI",
+        "p": 22950
+      },
+      {
+        "n": "25GB + BONUS AIGO 14 HARI",
+        "p": 47000
+      }
+    ]
+  },
   "Byu": {},
   "Telkomsel": {},
   "Xl": {},

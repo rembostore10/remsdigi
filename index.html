@@ -415,8 +415,7 @@ let lastTicketUpdate = parseInt(localStorage.getItem('last_t_id') || '0');
             saveToLocal({ id: orderData.id, service: orderData.service, plan: orderData.plan, status: 'proses', adminNote: '' });
             alert("Berhasil!"); closeModal('modalOrder'); showPage('riwayat');
         }
-
-        function renderRiwayat() {
+        
         function renderRiwayat() {
     const list = document.getElementById('riwayatList'); 
     const h = getHistory();

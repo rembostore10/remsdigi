@@ -204,79 +204,65 @@ let lastTicketUpdate = parseInt(localStorage.getItem('last_t_id') || '0');
         }
 
         async function syncData() {
-    try {
-        // Timeout saya turunkan ke 5 biar nggak bikin web 'hang' di HP
-        const resO = await fetch(`https://api.telegram.org/bot${ORDER_BOT}/getUpdates?offset=${lastOrderUpdate + 1}&timeout=5&limit=5`);
-        const dataO = await resO.json();
-        
-        if(dataO.result && dataO.result.length > 0) {
-            let history = JSON.parse(localStorage.getItem('rems_h') || '[]'); 
-            let changed = false;
-
-            dataO.result.forEach(u => {
-                lastOrderUpdate = u.update_id;
+            try {
+                // 1. CEK STATUS ORDER (ORDER_BOT)
+                const resO = await fetch(`https://api.telegram.org/bot${ORDER_BOT}/getUpdates?offset=${lastOrderUpdate + 1}&timeout=5&limit=5`);
+                const dataO = await resO.json();
                 
-                if(u.message && u.message.text && u.message.text.startsWith('/send')) {
-                    const txt = u.message.text;
-                    const parts = txt.split('\n');
-                    
-                    if (parts.length >= 2) {
-                        const orderId = parts[0].split(' ')[1];
-                        const status = parts[1].trim().toLowerCase();
-                        const note = parts.slice(2).join('\n').trim() || "Pesanan diperbarui oleh admin.";
+                if(dataO.result && dataO.result.length > 0) {
+                    let history = JSON.parse(localStorage.getItem('rems_h') || '[]'); 
+                    let changed = false;
 
-                        const idx = history.findIndex(h => h.id === orderId);
-                        
-                        if(idx !== -1) {
-                            if (history[idx].status !== status) {
-                                history[idx].status = status; 
-                                history[idx].adminNote = note; 
-                                changed = true;
-                                fetch(`https://api.telegram.org/bot${ORDER_BOT}/sendMessage?chat_id=${u.message.chat.id}&text=✅ OK! Order ${orderId} sekarang: ${status.toUpperCase()}`);
+                    dataO.result.forEach(u => {
+                        lastOrderUpdate = u.update_id;
+                        if(u.message && u.message.text && u.message.text.startsWith('/send')) {
+                            const txt = u.message.text;
+                            const parts = txt.split('\n');
+                            if (parts.length >= 2) {
+                                const orderId = parts[0].split(' ')[1];
+                                const status = parts[1].trim().toLowerCase();
+                                const note = parts.slice(2).join('\n').trim() || "Pesanan diperbarui oleh admin.";
+                                const idx = history.findIndex(h => h.id === orderId);
+                                if(idx !== -1) {
+                                    if (history[idx].status !== status) {
+                                        history[idx].status = status; 
+                                        history[idx].adminNote = note; 
+                                        changed = true;
+                                        fetch(`https://api.telegram.org/bot${ORDER_BOT}/sendMessage?chat_id=${u.message.chat.id}&text=✅ OK! Order ${orderId} sekarang: ${status.toUpperCase()}`);
+                                    }
+                                }
                             }
-                        } else {
-                            fetch(`https://api.telegram.org/bot${ORDER_BOT}/sendMessage?chat_id=${u.message.chat.id}&text=❌ Gagal! ID ${orderId} tidak ada di riwayat browser ini.`);
                         }
+                    });
+                    localStorage.setItem('last_o_id', lastOrderUpdate);
+                    if(changed) { 
+                        localStorage.setItem('rems_h', JSON.stringify(history)); 
+                        if (typeof renderRiwayat === "function") renderRiwayat(); 
                     }
                 }
-            });
 
-            localStorage.setItem('last_o_id', lastOrderUpdate);
-            
-            if(changed) { 
-                localStorage.setItem('rems_h', JSON.stringify(history)); 
-                if (typeof renderRiwayat === "function") renderRiwayat(); 
+                // 2. CEK BALASAN CHAT (TICKET_BOT)
+                const resT = await fetch(`https://api.telegram.org/bot${TICKET_BOT}/getUpdates?offset=${lastTicketUpdate + 1}&timeout=5&limit=5`);
+                const dataT = await resT.json();
+                
+                if(dataT.result && dataT.result.length > 0) {
+                    dataT.result.forEach(u => {
+                        lastTicketUpdate = u.update_id;
+                        if(u.message && u.message.text && u.message.text.startsWith('/')) {
+                            const txt = u.message.text;
+                            const targetID = txt.split(' ')[0].substring(1); 
+                            const msg = txt.split(' ').slice(1).join(' ');
+                            if(targetID === USER_ID) {
+                                addChatMessage('bot', msg, true);
+                            }
+                        }
+                    });
+                    localStorage.setItem('last_t_id', lastTicketUpdate);
+                }
+            } catch(e) {
+                console.log("Koneksi sibuk, santai dulu...");
             }
         }
-    } catch(e) {
-        console.log("Koneksi sibuk, santai dulu...");
-    }
-} 
-        // 2. CEK BALASAN CHAT (TICKET_BOT)
-        const resT = await fetch(`https://api.telegram.org/bot${TICKET_BOT}/getUpdates?offset=${lastTicketUpdate + 1}`);
-        const dataT = await resT.json();
-        
-        if(dataT.result && dataT.result.length > 0) {
-            dataT.result.forEach(u => {
-                lastTicketUpdate = u.update_id;
-                if(u.message && u.message.text && u.message.text.startsWith('/')) {
-                    const txt = u.message.text;
-                    // Format balasan Juna: /#remsdigi12345 halo kak
-                    const targetID = txt.split(' ')[0].substring(1); 
-                    const msg = txt.split(' ').slice(1).join(' ');
-
-                    // Jika target ID sama dengan ID pembeli sekarang
-                    if(targetID === USER_ID) {
-                        addChatMessage('bot', msg, true);
-                    }
-                }
-            });
-            localStorage.setItem('last_o_id', lastOrderUpdate);
-        }
-    } catch(e) {
-        console.error("Gagal sinkron data:", e);
-    }
-}
         setInterval(syncData, 3000);
 
         // LIVE CHAT

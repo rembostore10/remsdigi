@@ -205,24 +205,21 @@ let lastTicketUpdate = parseInt(localStorage.getItem('last_t_id') || '0');
 
         async function syncData() {
     try {
-        // Tambahkan parameter timeout=20 agar koneksi tetap terbuka & lebih cepat merespon (Long Polling)
-        const resO = await fetch(`https://api.telegram.org/bot${ORDER_BOT}/getUpdates?offset=${lastOrderUpdate + 1}&timeout=20&limit=5`);
+        // Timeout saya turunkan ke 5 biar nggak bikin web 'hang' di HP
+        const resO = await fetch(`https://api.telegram.org/bot${ORDER_BOT}/getUpdates?offset=${lastOrderUpdate + 1}&timeout=5&limit=5`);
         const dataO = await resO.json();
         
         if(dataO.result && dataO.result.length > 0) {
-            let history = getHistory(); 
+            let history = JSON.parse(localStorage.getItem('rems_h') || '[]'); 
             let changed = false;
 
-            // Urutkan agar pesan terbaru yang diproses terakhir
             dataO.result.forEach(u => {
                 lastOrderUpdate = u.update_id;
                 
-                // Filter: Hanya proses jika ada pesan teks dan dikirim oleh Juna (Admin)
                 if(u.message && u.message.text && u.message.text.startsWith('/send')) {
                     const txt = u.message.text;
                     const parts = txt.split('\n');
                     
-                    // Validasi format baris: /send [ID] (Baris 1), status (Baris 2)
                     if (parts.length >= 2) {
                         const orderId = parts[0].split(' ')[1];
                         const status = parts[1].trim().toLowerCase();
@@ -231,36 +228,30 @@ let lastTicketUpdate = parseInt(localStorage.getItem('last_t_id') || '0');
                         const idx = history.findIndex(h => h.id === orderId);
                         
                         if(idx !== -1) {
-                            // Cek jika status memang berubah biar gak kerja dua kali
                             if (history[idx].status !== status) {
                                 history[idx].status = status; 
                                 history[idx].adminNote = note; 
                                 changed = true;
-                                
-                                // Notif balik ke Telegram Juna
                                 fetch(`https://api.telegram.org/bot${ORDER_BOT}/sendMessage?chat_id=${u.message.chat.id}&text=✅ OK! Order ${orderId} sekarang: ${status.toUpperCase()}`);
                             }
                         } else {
-                            // Beritahu jika ID salah ketik atau tidak ada di memori browser
                             fetch(`https://api.telegram.org/bot${ORDER_BOT}/sendMessage?chat_id=${u.message.chat.id}&text=❌ Gagal! ID ${orderId} tidak ada di riwayat browser ini.`);
                         }
                     }
                 }
             });
 
-            // Langsung simpan offset terakhir agar tidak membaca pesan yang sama
             localStorage.setItem('last_o_id', lastOrderUpdate);
             
             if(changed) { 
                 localStorage.setItem('rems_h', JSON.stringify(history)); 
-                renderRiwayat(); 
+                if (typeof renderRiwayat === "function") renderRiwayat(); 
             }
         }
     } catch(e) {
-        console.log("Koneksi sibuk, mencoba kembali...");
+        console.log("Koneksi sibuk, santai dulu...");
     }
-}
-
+} 
         // 2. CEK BALASAN CHAT (TICKET_BOT)
         const resT = await fetch(`https://api.telegram.org/bot${TICKET_BOT}/getUpdates?offset=${lastTicketUpdate + 1}`);
         const dataT = await resT.json();

@@ -422,7 +422,9 @@ let lastTicketUpdate = parseInt(localStorage.getItem('last_t_id') || '0');
             list.innerHTML = h.map((t, i) => {
                 let color = "bg-yellow-100 text-yellow-600"; let icon = "fa-clock";
                 if(t.status === 'sukses') { color = "bg-green-100 text-green-600"; icon = "fa-check-circle"; }
+                if(t.status === 'success') { color = "bg-green-100 text-green-600"; icon = "fa-check-circle"; }
                 if(t.status === 'gagal') { color = "bg-red-100 text-red-600"; icon = "fa-times-circle"; }
+                if(t.status === 'reffund') { color = "bg-red-100 text-red-600"; icon = "fa-times-circle"; }
                 return `
                 <div class="order-item" onclick="document.getElementById('dt-${i}').classList.toggle('active')">
                     <div class="flex justify-between items-center">

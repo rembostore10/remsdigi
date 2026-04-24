@@ -952,5 +952,14 @@
   "Byu": {},
   "Telkomsel": {},
   "Xl": {},
-  "Smartfren": {}
+  "Smartfren": {},
+  "Jasa CV": {
+    "CV Kreatif": [
+        {"n": "Template Neon Blue", "p": 15000, "img": "https://raw.githubusercontent.com/rembostore10/remsdigi/main/cv1.png"},
+        {"n": "Template Elegant White", "p": 20000, "img": "https://raw.githubusercontent.com/rembostore10/remsdigi/main/cv2.png"}
+    ],
+    "CV ATS": [
+        {"n": "ATS Standar", "p": 10000, "img": "https://raw.githubusercontent.com/rembostore10/remsdigi/main/ats1.png"}
+    ]
+}
 }

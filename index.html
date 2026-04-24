@@ -411,7 +411,6 @@ function updVar(type) {
     
     if(!app) { vb.innerHTML = ''; ib.classList.add('hidden'); return; }
 
-    // 1. LOGIKA UNTUK JASA CV
     if(type === "Jasa CV") {
         const templates = dbProduk[type][app];
         vb.innerHTML = `
@@ -425,56 +424,33 @@ function updVar(type) {
                 `).join('')}
             </div>
             <input type="hidden" id="selCVPrice" value="0">
-            <input type="hidden" id="selCVName" value="">
-        `;
+            <input type="hidden" id="selCVName" value="">`;
         ib.innerHTML = `
             <div class="space-y-3 mt-4">
-                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Data Isi CV:</p>
                 <input id="cvNama" placeholder="Nama Lengkap" class="input-styled">
                 <input id="cvTTL" placeholder="Tempat, Tanggal Lahir" class="input-styled">
-                <input id="cvAlamat" placeholder="Alamat Domisili" class="input-styled">
-                <textarea id="cvEdu" placeholder="Riwayat Pendidikan (Tahun - Sekolah)" class="input-styled h-20"></textarea>
-                <textarea id="cvExp" placeholder="Pengalaman Kerja / Organisasi" class="input-styled h-20"></textarea>
-                <input id="cvSkill" placeholder="Keahlian (Contoh: Design, Networking)" class="input-styled">
-            </div>
-        `;
+                <textarea id="cvEdu" placeholder="Pendidikan" class="input-styled h-20"></textarea>
+            </div>`;
     } 
-    // 2. LOGIKA UNTUK SUNTIK SOSMED (Pakai else if agar tidak bentrok)
     else if(type === "Suntik Sosmed") {
         const listLayanan = dbProduk[type][app]; 
-        
         vb.innerHTML = `
             <select id="sCat" onchange="updPriceSos()" class="input-styled mt-2 font-bold text-brand">
                 <option value="">-- Pilih Layanan --</option>
                 ${listLayanan.map(v => `<option value="${v.p}">${v.n}</option>`).join('')}
             </select>
-            <input type="number" id="sQty" placeholder="Jumlah (Minimal 10)" oninput="updPriceSos()" class="input-styled mt-2">
-            <div class="p-4 bg-teal-50 rounded-xl text-center border-2 border-dashed border-teal-200 mt-2">
-                <p id="sosPrice" class="text-brand font-black text-lg uppercase tracking-widest">Total: Rp0</p>
-            </div>`;
-        ib.innerHTML = `<input id="uT" placeholder="Link Profil / Username" class="input-styled mt-2">`;
+            <input type="number" id="sQty" placeholder="Jumlah" oninput="updPriceSos()" class="input-styled mt-2">
+            <p id="sosPrice" class="text-brand font-black text-center mt-2">Total: Rp0</p>`;
+        ib.innerHTML = `<input id="uT" placeholder="Link / Username" class="input-styled mt-2">`;
     } 
-    // 3. LOGIKA UNTUK LAYANAN LAINNYA (Pulsa, Game, dll)
     else {
         vb.innerHTML = `<select id="selVar" class="input-styled mt-2 font-bold text-brand">
             <option value="">-- Pilih Varian --</option>
             ${dbProduk[type][app].map(v => `<option value="${v.p}">${v.n} - Rp${v.p.toLocaleString()}</option>`).join('')}
         </select>`;
-        let ph = "ID / Nomor Tujuan";
-        if(type === "Aplikasi Premium") ph = "Email Terdaftar";
-        ib.innerHTML = `<input id="uT" placeholder="${ph}" class="input-styled mt-2">`;
+        ib.innerHTML = `<input id="uT" placeholder="ID / Nomor" class="input-styled mt-2">`;
     }
-    
     ib.classList.remove('hidden');
-}
-
-// FUNGSI SELECT CV (Harus di luar updVar)
-function selectCV(index, price, name) {
-    document.querySelectorAll('[id^="cvCard-"]').forEach(el => el.classList.remove('border-brand', 'bg-teal-50'));
-    const selected = document.getElementById(`cvCard-${index}`);
-    selected.classList.add('border-brand', 'bg-teal-50');
-    document.getElementById('selCVPrice').value = price;
-    document.getElementById('selCVName').value = name;
 }
         function updPriceSos() {
     const sCat = document.getElementById('sCat');
@@ -491,27 +467,29 @@ function selectCV(index, price, name) {
 }
 
         function goToPayment() {
-    orderData.id = "#rems" + Math.floor(1000 + Math.random() * 9000);
-    const target = document.getElementById('uT')?.value;
-    if(!target) return alert("Lengkapi data tujuan!");
-
-    if(orderData.service === "Suntik Sosmed") {
-        const sCat = document.getElementById('sCat');
-        const qty = parseInt(document.getElementById('sQty').value) || 0;
-        const pricePerThousand = parseFloat(sCat.value);
-        const selCatName = sCat.options[sCat.selectedIndex].text;
-
-        if(qty < 10) return alert("Minimal order 10!");
-
-        orderData.price = Math.ceil((pricePerThousand / 1000) * qty);
-        orderData.plan = document.getElementById('selApp').value + " " + qty + " " + selCatName;
+        orderData.id = "#rems" + Math.floor(1000 + Math.random() * 9000);
+    if(orderData.service === "Jasa CV") {
+        const p = parseInt(document.getElementById('selCVPrice').value);
+        if(p === 0) return alert("Pilih template CV dulu!");
+        orderData.price = p;
+        orderData.plan = "CV: " + document.getElementById('selCVName').value;
+        orderData.target = "Nama: " + document.getElementById('cvNama').value + " | TTL: " + document.getElementById('cvTTL').value;
     } else {
-        const selVar = document.getElementById('selVar');
-        if(!selVar.value) return alert("Pilih varian!");
-        orderData.price = parseInt(selVar.value);
-        orderData.plan = document.getElementById('selApp').value + " - " + selVar.options[selVar.selectedIndex].text.split(' -')[0];
+        const target = document.getElementById('uT')?.value;
+        if(!target) return alert("Lengkapi data tujuan!");
+        orderData.target = target;
+        
+        if(orderData.service === "Suntik Sosmed") {
+            const p = parseFloat(document.getElementById('sCat').value);
+            const q = parseInt(document.getElementById('sQty').value);
+            orderData.price = Math.ceil((p / 1000) * q);
+            orderData.plan = document.getElementById('selApp').value + " " + q;
+        } else {
+            const v = document.getElementById('selVar');
+            orderData.price = parseInt(v.value);
+            orderData.plan = v.options[v.selectedIndex].text;
+        }
     }
-
     document.getElementById('finalPrice').innerText = "Rp" + orderData.price.toLocaleString();
     document.getElementById('orderStep1').classList.add('hidden');
     document.getElementById('orderStep2').classList.remove('hidden');

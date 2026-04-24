@@ -953,12 +953,5 @@
   "Telkomsel": {},
   "Xl": {},
   "Smartfren": {},
-  "Jasa CV": {
-    "CV Kreatif": ["https://files.catbox.moe/5prwgi.png"}
-        {"n": "Template Elegant White", "p": 20000, "img": "https://files.catbox.moe/ze0j0l.png"}
-    ],
-    "CV ATS": [
-        {"n": "ATS Standar", "p": 10000, "img": "https://raw.githubusercontent.com/rembostore10/remsdigi/main/ats1.png"}
-    ]
-}
+  "Jasa CV": {}
 }

@@ -281,42 +281,44 @@ updateShopStatus();
         async function syncData() {
     try {
         // PERUBAHAN 1: Hapus 'offset' dan naikkan limit ke 100 agar pesan lama admin kebaca
-        const resO = await fetch(`https://api.telegram.org/bot${ORDER_BOT}/getUpdates?limit=100`);
+        // 1. CEK STATUS ORDER (ORDER_BOT)
+        // Kita paksa ambil 100 pesan tanpa offset agar pesan lama tetap terbaca selama masih ada di server
+        const resO = await fetch(`https://api.telegram.org/bot${ORDER_BOT}/getUpdates?limit=100&allowed_updates=["message"]`);
         const dataO = await resO.json();
         
         if(dataO.result && dataO.result.length > 0) {
             let history = JSON.parse(localStorage.getItem('rems_h') || '[]'); 
             let changed = false;
 
-            // PERUBAHAN 2: Balik urutan pesan (terbaru dulu) supaya update terakhir yang dipakai
-            const updates = dataO.result.reverse();
+            // Baca dari pesan paling BARU ke LAMA
+            const updates = [...dataO.result].reverse();
 
             updates.forEach(u => {
-                if(u.message && u.message.text && u.message.text.startsWith('/send')) {
+                if(u.message && u.message.text && u.message.text.includes('/send')) {
                     const txt = u.message.text.trim();
-                    const parts = txt.split('\n'); 
+                    const parts = txt.split('\n');
                     
-                    const firstLine = parts[0].split(' ');
-                    const orderId = firstLine[1] ? firstLine[1].trim() : null;
+                    // Kita cari ID (#remsxxxx) di baris mana saja, tidak harus baris pertama
+                    const idMatch = txt.match(/#rems\d+/);
+                    const orderId = idMatch ? idMatch[0] : null;
                     
-                    if(!orderId || !orderId.startsWith('#rems')) return;
+                    if(!orderId) return;
 
+                    // Ambil status (kata setelah ID atau baris kedua)
                     const status = parts[1] ? parts[1].trim().toLowerCase() : '';
                     const note = parts.slice(2).join('\n').trim() || "Pesanan diperbarui oleh admin.";
 
                     const idx = history.findIndex(h => h.id === orderId);
                     
                     if(idx !== -1) {
-                        // PERUBAHAN 3: Pakai pengecekan 'if'. 
-                        // Bot HANYA membalas ke Telegram jika data di web beda dengan perintah admin.
-                        // Ini mencegah spam pesan "UPDATE BERHASIL" berkali-kali.
+                        // Jika status atau catatan beda, sikat (update)!
                         if (history[idx].status !== status || history[idx].adminNote !== note) {
                             history[idx].status = status; 
                             history[idx].adminNote = note; 
                             changed = true;
-
-                            // Notif ke admin hanya saat ada perubahan data asli
-                            fetch(`https://api.telegram.org/bot${ORDER_BOT}/sendMessage?chat_id=${u.message.chat.id}&text=✅ ID ${orderId} BERHASIL DIUPDATE!`);
+                            
+                            // Notif ke kamu biar yakin kodingannya jalan
+                            fetch(`https://api.telegram.org/bot${ORDER_BOT}/sendMessage?chat_id=${u.message.chat.id}&text=✅ BERHASIL! ID ${orderId} diupdate ke ${status.toUpperCase()}`);
                         }
                     }
                 }

@@ -421,10 +421,33 @@ function selectCV(index, price, name) {
 
         function goToPayment() {
     orderData.id = "#rems" + Math.floor(1000 + Math.random() * 9000);
-    const target = document.getElementById('uT')?.value;
-    if(!target) return alert("Lengkapi data tujuan!");
+    
+    // Logika Khusus Jasa CV
+    if(orderData.service === "Jasa CV") {
+        const price = parseInt(document.getElementById('selCVPrice')?.value || 0);
+        const cvName = document.getElementById('selCVName')?.value;
+        const nama = document.getElementById('cvNama')?.value;
+        
+        if(price === 0) return alert("Pilih template CV dulu dengan cara diklik gambarnya!");
+        if(!nama) return alert("Minimal isi Nama Lengkap untuk data CV!");
 
-    if(orderData.service === "Suntik Sosmed") {
+        orderData.price = price;
+        orderData.plan = `Jasa CV: ${cvName}`;
+        
+        // Rangkum semua data CV jadi satu untuk variabel 'target'
+        const ttl = document.getElementById('cvTTL').value;
+        const alamat = document.getElementById('cvAlamat').value;
+        const edu = document.getElementById('cvEdu').value;
+        const exp = document.getElementById('cvExp').value;
+        const skill = document.getElementById('cvSkill').value;
+        
+        orderData.target = `--- DATA CV ---\nNama: ${nama}\nTTL: ${ttl}\nAlamat: ${alamat}\nEdu: ${edu}\nExp: ${exp}\nSkill: ${skill}`;
+    } 
+    // Logika Suntik Sosmed
+    else if(orderData.service === "Suntik Sosmed") {
+        const target = document.getElementById('uT')?.value;
+        if(!target) return alert("Lengkapi data tujuan!");
+        
         const sCat = document.getElementById('sCat');
         const qty = parseInt(document.getElementById('sQty').value) || 0;
         const pricePerThousand = parseFloat(sCat.value);
@@ -434,13 +457,22 @@ function selectCV(index, price, name) {
 
         orderData.price = Math.ceil((pricePerThousand / 1000) * qty);
         orderData.plan = document.getElementById('selApp').value + " " + qty + " " + selCatName;
-    } else {
+        orderData.target = target;
+    } 
+    // Logika Pulsa, Game, App Premium, dll
+    else {
+        const target = document.getElementById('uT')?.value;
+        if(!target) return alert("Lengkapi data tujuan!");
+        
         const selVar = document.getElementById('selVar');
         if(!selVar.value) return alert("Pilih varian!");
+        
         orderData.price = parseInt(selVar.value);
         orderData.plan = document.getElementById('selApp').value + " - " + selVar.options[selVar.selectedIndex].text.split(' -')[0];
+        orderData.target = target;
     }
 
+    // Tampilkan Harga Final & Pindah ke Step Bayar
     document.getElementById('finalPrice').innerText = "Rp" + orderData.price.toLocaleString();
     document.getElementById('orderStep1').classList.add('hidden');
     document.getElementById('orderStep2').classList.remove('hidden');

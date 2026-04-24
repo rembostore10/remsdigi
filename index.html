@@ -279,65 +279,78 @@ async function updateShopStatus() {
 setInterval(updateShopStatus, 10000);
 updateShopStatus();
         async function syncData() {
-            try {
-                // 1. CEK STATUS ORDER (ORDER_BOT)
-                const resO = await fetch(`https://api.telegram.org/bot${ORDER_BOT}/getUpdates?offset=${lastOrderUpdate + 1}&timeout=5&limit=5`);
-                const dataO = await resO.json();
-                
-                if(dataO.result && dataO.result.length > 0) {
-                    let history = JSON.parse(localStorage.getItem('rems_h') || '[]'); 
-                    let changed = false;
+    try {
+        // 1. CEK STATUS ORDER (ORDER_BOT)
+        // Kita tambah limit jadi 10 supaya kalau admin balas chat lama tetap kebaca
+        const resO = await fetch(`https://api.telegram.org/bot${ORDER_BOT}/getUpdates?offset=${lastOrderUpdate + 1}&timeout=5&limit=10`);
+        const dataO = await resO.json();
+        
+        if(dataO.result && dataO.result.length > 0) {
+            let history = JSON.parse(localStorage.getItem('rems_h') || '[]'); 
+            let changed = false;
 
-                    dataO.result.forEach(u => {
-                        lastOrderUpdate = u.update_id;
-                        if(u.message && u.message.text && u.message.text.startsWith('/send')) {
-                            const txt = u.message.text;
-                            const parts = txt.split('\n');
-                            if (parts.length >= 2) {
-                                const orderId = parts[0].split(' ')[1];
-                                const status = parts[1].trim().toLowerCase();
-                                const note = parts.slice(2).join('\n').trim() || "Pesanan diperbarui oleh admin.";
-                                const idx = history.findIndex(h => h.id === orderId);
-                                if(idx !== -1) {
-                                    if (history[idx].status !== status) {
-                                        history[idx].status = status; 
-                                        history[idx].adminNote = note; 
-                                        changed = true;
-                                        fetch(`https://api.telegram.org/bot${ORDER_BOT}/sendMessage?chat_id=${u.message.chat.id}&text=✅ OK! Order ${orderId} sekarang: ${status.toUpperCase()}`);
-                                    }
-                                }
-                            }
-                        }
-                    });
-                    localStorage.setItem('last_o_id', lastOrderUpdate);
-                    if(changed) { 
-                        localStorage.setItem('rems_h', JSON.stringify(history)); 
-                        if (typeof renderRiwayat === "function") renderRiwayat(); 
+            dataO.result.forEach(u => {
+                lastOrderUpdate = u.update_id;
+                
+                // Pastikan admin pakai format: /send #rems1234 [status] [catatan]
+                if(u.message && u.message.text && u.message.text.startsWith('/send')) {
+                    const txt = u.message.text;
+                    const parts = txt.split('\n'); // Split berdasarkan baris baru
+                    
+                    // Ambil baris pertama: "/send #rems1234"
+                    const firstLine = parts[0].split(' ');
+                    const orderId = firstLine[1]; // Ini ID pesanan (#remsxxxx)
+                    
+                    // Ambil baris kedua: "sukses" atau "gagal"
+                    const status = parts[1] ? parts[1].trim().toLowerCase() : '';
+                    
+                    // Ambil baris ketiga dst sebagai catatan admin
+                    const note = parts.slice(2).join('\n').trim() || "Pesanan diperbarui oleh admin.";
+
+                    const idx = history.findIndex(h => h.id === orderId);
+                    
+                    if(idx !== -1) {
+                        // KUNCI: Kita hapus pengecekan 'if status berbeda'. 
+                        // Jadi biarpun sudah sukses, kalau admin kirim gagal, tetap akan berubah.
+                        history[idx].status = status; 
+                        history[idx].adminNote = note; 
+                        changed = true;
+
+                        // Kasih notif balik ke bot biar admin tau update berhasil
+                        fetch(`https://api.telegram.org/bot${ORDER_BOT}/sendMessage?chat_id=${u.message.chat.id}&text=✅ UPDATE BERHASIL!\nOrder: ${orderId}\nStatus Baru: ${status.toUpperCase()}`);
                     }
                 }
+            });
 
-                // 2. CEK BALASAN CHAT (TICKET_BOT)
-                const resT = await fetch(`https://api.telegram.org/bot${TICKET_BOT}/getUpdates?offset=${lastTicketUpdate + 1}&timeout=5&limit=5`);
-                const dataT = await resT.json();
-                
-                if(dataT.result && dataT.result.length > 0) {
-                    dataT.result.forEach(u => {
-                        lastTicketUpdate = u.update_id;
-                        if(u.message && u.message.text && u.message.text.startsWith('/')) {
-                            const txt = u.message.text;
-                            const targetID = txt.split(' ')[0].substring(1); 
-                            const msg = txt.split(' ').slice(1).join(' ');
-                            if(targetID === USER_ID) {
-                                addChatMessage('bot', msg, true);
-                            }
-                        }
-                    });
-                    localStorage.setItem('last_t_id', lastTicketUpdate);
-                }
-            } catch(e) {
-                console.log("Koneksi sibuk, santai dulu...");
+            localStorage.setItem('last_o_id', lastOrderUpdate);
+            if(changed) { 
+                localStorage.setItem('rems_h', JSON.stringify(history)); 
+                if (typeof renderRiwayat === "function") renderRiwayat(); 
             }
         }
+
+        // 2. CEK BALASAN CHAT (TICKET_BOT) - Tetap seperti biasa
+        const resT = await fetch(`https://api.telegram.org/bot${TICKET_BOT}/getUpdates?offset=${lastTicketUpdate + 1}&timeout=5&limit=5`);
+        const dataT = await resT.json();
+        
+        if(dataT.result && dataT.result.length > 0) {
+            dataT.result.forEach(u => {
+                lastTicketUpdate = u.update_id;
+                if(u.message && u.message.text && u.message.text.startsWith('/')) {
+                    const txt = u.message.text;
+                    const targetID = txt.split(' ')[0].substring(1); 
+                    const msg = txt.split(' ').slice(1).join(' ');
+                    if(targetID === USER_ID) {
+                        addChatMessage('bot', msg, true);
+                    }
+                }
+            });
+            localStorage.setItem('last_t_id', lastTicketUpdate);
+        }
+    } catch(e) {
+        console.log("Sinyal lagi lemot, Jun...");
+    }
+}
         setInterval(syncData, 3000);
 
         // LIVE CHAT

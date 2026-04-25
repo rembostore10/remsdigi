@@ -953,5 +953,22 @@
   "Telkomsel": {},
   "Xl": {},
   "Smartfren": {},
-  "Jasa CV": {}
+  "Jasa CV": {
+    "CV Biasa": [
+      {
+        "n": "GREEN WHITE",
+        "p": 5000
+      },
+      {
+        "n": "BLUE WHITE",
+        "p": 5000
+      }
+    ],
+    "CV ATS": [
+      {
+        "n": "BLACK WHITE",
+        "p": 10000
+      }
+    ]
+  }
 }

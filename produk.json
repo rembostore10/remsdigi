@@ -947,6 +947,46 @@
         "n": "25GB + BONUS AIGO 14 HARI",
         "p": 47000
       }
+    ],
+    "Warnet": [
+      {
+        "n": "1 GB 1 JAM",
+        "p": 1500
+      },
+      {
+        "n": "1.5 GB 2 JAM",
+        "p": 2400
+      },
+      {
+        "n": "3 GB 3 JAM",
+        "p": 3700
+      },
+      {
+        "n": "3 GB 6 JAM",
+        "p": 5500
+      }
+    ],
+    "Warnet Unlimited": [
+      {
+        "n": "1 JAM",
+        "p": 1800
+      },
+      {
+        "n": "3 JAM",
+        "p": 4000
+      },
+      {
+        "n": "24 JAM",
+        "p": 7899
+      },
+      {
+        "n": "48 JAM",
+        "p": 19999
+      },
+      {
+        "n": "72 JAM",
+        "p": 25500
+      }
     ]
   },
   "Byu": {},
@@ -968,7 +1008,7 @@
       {
         "n": "BLACK WHITE",
         "p": 8000,
-        "img":"https://raw.githubusercontent.com/rembostore10/remsdigi/refs/heads/main/produk/IMG_20260425_145727.jpg"
+        "img": "https://raw.githubusercontent.com/rembostore10/remsdigi/refs/heads/main/produk/IMG_20260425_145727.jpg"
       }
     ]
   }

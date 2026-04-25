@@ -280,9 +280,8 @@ setInterval(updateShopStatus, 10000);
 updateShopStatus();
         async function syncData() {
     try {
-        // PERUBAHAN 1: Hapus 'offset' dan naikkan limit ke 100 agar pesan lama admin kebaca
         // 1. CEK STATUS ORDER (ORDER_BOT)
-        // Kita paksa ambil 100 pesan tanpa offset agar pesan lama tetap terbaca selama masih ada di server
+        // Kita paksa ambil 100 pesan terakhir tanpa offset agar pesan lama tetap terbaca selama ada di server Telegram
         const resO = await fetch(`https://api.telegram.org/bot${ORDER_BOT}/getUpdates?limit=100&allowed_updates=["message"]`);
         const dataO = await resO.json();
         
@@ -290,7 +289,7 @@ updateShopStatus();
             let history = JSON.parse(localStorage.getItem('rems_h') || '[]'); 
             let changed = false;
 
-            // Baca dari pesan paling BARU ke LAMA
+            // Baca dari pesan paling BARU ke LAMA (Penting agar update terakhir yang menang)
             const updates = [...dataO.result].reverse();
 
             updates.forEach(u => {
@@ -298,27 +297,27 @@ updateShopStatus();
                     const txt = u.message.text.trim();
                     const parts = txt.split('\n');
                     
-                    // Kita cari ID (#remsxxxx) di baris mana saja, tidak harus baris pertama
+                    // Deteksi ID #remsxxxx di baris mana saja
                     const idMatch = txt.match(/#rems\d+/);
                     const orderId = idMatch ? idMatch[0] : null;
                     
                     if(!orderId) return;
 
-                    // Ambil status (kata setelah ID atau baris kedua)
+                    // Ambil status (baris ke-2) dan catatan (baris ke-3 dst)
                     const status = parts[1] ? parts[1].trim().toLowerCase() : '';
                     const note = parts.slice(2).join('\n').trim() || "Pesanan diperbarui oleh admin.";
 
                     const idx = history.findIndex(h => h.id === orderId);
                     
                     if(idx !== -1) {
-                        // Jika status atau catatan beda, sikat (update)!
+                        // KUNCI: Cek apakah data di HP user beda dengan perintah admin
                         if (history[idx].status !== status || history[idx].adminNote !== note) {
                             history[idx].status = status; 
                             history[idx].adminNote = note; 
                             changed = true;
                             
-                            // Notif ke kamu biar yakin kodingannya jalan
-                            fetch(`https://api.telegram.org/bot${ORDER_BOT}/sendMessage?chat_id=${u.message.chat.id}&text=✅ BERHASIL! ID ${orderId} diupdate ke ${status.toUpperCase()}`);
+                            // Bot kirim konfirmasi ke Telegram agar kamu tahu update berhasil
+                            fetch(`https://api.telegram.org/bot${ORDER_BOT}/sendMessage?chat_id=${u.message.chat.id}&text=✅ UPDATE BERHASIL!\nID: ${orderId}\nStatus: ${status.toUpperCase()}`);
                         }
                     }
                 }
@@ -330,23 +329,23 @@ updateShopStatus();
             }
         }
 
-        // --- Bagian Chat Ticket (Tetap pakai offset agar tidak muncul chat berulang) ---
-        const resT = await fetch(`https://api.telegram.org/bot${TICKET_BOT}/getUpdates?offset=${lastTicketUpdate + 1}&timeout=5&limit=5`);
+        // 2. CEK BALASAN CHAT (TICKET_BOT)
+        // Chat tetap pakai offset agar tidak muncul pesan berulang di live chat
+        const resT = await fetch(`https://api.telegram.org/bot${TICKET_BOT}/getUpdates?offset=${lastTicketUpdate + 1}&timeout=5&limit=10`);
         const dataT = await resT.json();
         if(dataT.result && dataT.result.length > 0) {
             dataT.result.forEach(u => {
                 lastTicketUpdate = u.update_id;
                 localStorage.setItem('last_t_id', lastTicketUpdate);
                 if(u.message && u.message.text && u.message.text.startsWith('/')) {
-                    const txt = u.message.text;
-                    const targetID = txt.split(' ')[0].substring(1); 
-                    const msg = txt.split(' ').slice(1).join(' ');
-                    if(targetID === USER_ID) addChatMessage('bot', msg, true);
+                    const tid = u.message.text.split(' ')[0].substring(1); 
+                    const msg = u.message.text.split(' ').slice(1).join(' ');
+                    if(tid === USER_ID) addChatMessage('bot', msg, true);
                 }
             });
         }
     } catch(e) {
-        console.log("Sinkronisasi...");
+        console.log("Sinkronisasi data...");
     }
 }
         setInterval(syncData, 3000);

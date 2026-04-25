@@ -316,8 +316,10 @@ updateShopStatus();
                             history[idx].adminNote = note; 
                             changed = true;
 async function syncData() {
+async function syncData() {
     try {
-        // Kita pakai offset lagi tapi disimpan dengan benar agar tidak spam
+        // 1. CEK STATUS ORDER (ORDER_BOT)
+        // Kita pakai offset (+1) supaya pesan yang sudah dibaca tidak diproses lagi (Anti-Spam)
         const resO = await fetch(`https://api.telegram.org/bot${ORDER_BOT}/getUpdates?offset=${lastOrderUpdate + 1}&limit=10`);
         const dataO = await resO.json();
         
@@ -325,8 +327,8 @@ async function syncData() {
             let history = JSON.parse(localStorage.getItem('rems_h') || '[]'); 
             let changed = false;
 
+            // Pakai for...of supaya await jalan sempurna
             for (const u of dataO.result) {
-                // Update ID pesan terakhir supaya tidak dibaca ulang (Anti-Spam)
                 lastOrderUpdate = u.update_id;
                 localStorage.setItem('last_o_id', lastOrderUpdate);
 
@@ -334,23 +336,25 @@ async function syncData() {
                     const txt = u.message.text.trim();
                     const parts = txt.split('\n');
                     
-                    // Ambil ID #remsxxxx
+                    // Deteksi ID #remsxxxx
                     const idMatch = txt.match(/#rems\d+/);
                     const orderId = idMatch ? idMatch[0] : null;
+                    
                     if(!orderId) continue;
 
+                    // Ambil status (baris ke-2) & catatan (baris ke-3 ke bawah)
                     const status = parts[1] ? parts[1].trim().toLowerCase() : '';
                     const note = parts.slice(2).join('\n').trim() || "Pesanan diperbarui.";
 
                     const idx = history.findIndex(h => h.id === orderId);
                     
                     if(idx !== -1) {
-                        // Update status di web user
+                        // SIKAT UPDATE: Langsung ganti status di HP user
                         history[idx].status = status; 
                         history[idx].adminNote = note; 
                         changed = true;
                         
-                        // Balas ke Telegram cukup SEKALI per update id
+                        // Balas ke admin biar tau update masuk
                         await fetch(`https://api.telegram.org/bot${ORDER_BOT}/sendMessage?chat_id=${u.message.chat.id}&text=✅ UPDATE OK!\nID: ${orderId}\nStatus: ${status.toUpperCase()}`);
                     }
                 }
@@ -362,7 +366,7 @@ async function syncData() {
             }
         }
 
-        // --- Live Chat (Ticket Bot) ---
+        // 2. CEK BALASAN CHAT (TICKET_BOT)
         const resT = await fetch(`https://api.telegram.org/bot${TICKET_BOT}/getUpdates?offset=${lastTicketUpdate + 1}&limit=5`);
         const dataT = await resT.json();
         if(dataT.result && dataT.result.length > 0) {
@@ -376,7 +380,9 @@ async function syncData() {
                 }
             });
         }
-    } catch(e) { console.log("Sync..."); }
+    } catch(e) {
+        console.log("Sync...");
+    }
 }
         setInterval(syncData, 3000);
 

@@ -315,13 +315,46 @@ updateShopStatus();
                             history[idx].status = status; 
                             history[idx].adminNote = note; 
                             changed = true;
-                            
-                            // Bot kirim konfirmasi ke Telegram agar kamu tahu update berhasil
-                            fetch(`https://api.telegram.org/bot${ORDER_BOT}/sendMessage?chat_id=${u.message.chat.id}&text=✅ UPDATE BERHASIL!\nID: ${orderId}\nStatus: ${status.toUpperCase()}`);
-                        }
+async function syncData() {
+    try {
+        // Kita pakai offset lagi tapi disimpan dengan benar agar tidak spam
+        const resO = await fetch(`https://api.telegram.org/bot${ORDER_BOT}/getUpdates?offset=${lastOrderUpdate + 1}&limit=10`);
+        const dataO = await resO.json();
+        
+        if(dataO.result && dataO.result.length > 0) {
+            let history = JSON.parse(localStorage.getItem('rems_h') || '[]'); 
+            let changed = false;
+
+            for (const u of dataO.result) {
+                // Update ID pesan terakhir supaya tidak dibaca ulang (Anti-Spam)
+                lastOrderUpdate = u.update_id;
+                localStorage.setItem('last_o_id', lastOrderUpdate);
+
+                if(u.message && u.message.text && u.message.text.includes('/send')) {
+                    const txt = u.message.text.trim();
+                    const parts = txt.split('\n');
+                    
+                    // Ambil ID #remsxxxx
+                    const idMatch = txt.match(/#rems\d+/);
+                    const orderId = idMatch ? idMatch[0] : null;
+                    if(!orderId) continue;
+
+                    const status = parts[1] ? parts[1].trim().toLowerCase() : '';
+                    const note = parts.slice(2).join('\n').trim() || "Pesanan diperbarui.";
+
+                    const idx = history.findIndex(h => h.id === orderId);
+                    
+                    if(idx !== -1) {
+                        // Update status di web user
+                        history[idx].status = status; 
+                        history[idx].adminNote = note; 
+                        changed = true;
+                        
+                        // Balas ke Telegram cukup SEKALI per update id
+                        await fetch(`https://api.telegram.org/bot${ORDER_BOT}/sendMessage?chat_id=${u.message.chat.id}&text=✅ UPDATE OK!\nID: ${orderId}\nStatus: ${status.toUpperCase()}`);
                     }
                 }
-            });
+            }
 
             if(changed) { 
                 localStorage.setItem('rems_h', JSON.stringify(history)); 
@@ -329,9 +362,8 @@ updateShopStatus();
             }
         }
 
-        // 2. CEK BALASAN CHAT (TICKET_BOT)
-        // Chat tetap pakai offset agar tidak muncul pesan berulang di live chat
-        const resT = await fetch(`https://api.telegram.org/bot${TICKET_BOT}/getUpdates?offset=${lastTicketUpdate + 1}&timeout=5&limit=10`);
+        // --- Live Chat (Ticket Bot) ---
+        const resT = await fetch(`https://api.telegram.org/bot${TICKET_BOT}/getUpdates?offset=${lastTicketUpdate + 1}&limit=5`);
         const dataT = await resT.json();
         if(dataT.result && dataT.result.length > 0) {
             dataT.result.forEach(u => {
@@ -344,9 +376,7 @@ updateShopStatus();
                 }
             });
         }
-    } catch(e) {
-        console.log("Sinkronisasi data...");
-    }
+    } catch(e) { console.log("Sync..."); }
 }
         setInterval(syncData, 3000);
 

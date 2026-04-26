@@ -400,79 +400,75 @@
 
         // --- FUNGSI SINNKRONISASI (SOLUSI FIX) ---
         async function syncData() {
-            try {
-                // Kita ambil 100 pesan terakhir untuk dicek
-                const resO = await fetch(`https://api.telegram.org/bot${ORDER_BOT}/getUpdates?limit=100`);
-                const dataO = await resO.json();
-                
-                if(dataO.result && dataO.result.length > 0) {
-                    let history = getHistory(); 
-                    let changed = false;
-                    const updates = [...dataO.result].reverse();
+    try {
+        const resO = await fetch(`https://api.telegram.org/bot${ORDER_BOT}/getUpdates?limit=100`);
+        const dataO = await resO.json();
+        
+        if(dataO.result && dataO.result.length > 0) {
+            let history = getHistory(); 
+            let changed = false;
+            const updates = [...dataO.result].reverse();
 
-                    // 1. CEK FITUR /STOP TERLEBIH DAHULU
-                    const stopSignal = updates.find(u => u.message && u.message.text === '/stop');
-                    if (stopSignal) {
-                        // Jika ada /stop, kita anggap semua pesan lama sudah dibaca (skip)
-                        lastOrderUpdate = stopSignal.update_id;
-                        localStorage.setItem('last_o_id', lastOrderUpdate);
-                        // Beritahu admin kalau spam sudah dihentikan
-                        fetch(`https://api.telegram.org/bot${ORDER_BOT}/sendMessage?chat_id=${stopSignal.message.chat.id}&text=🛑 SPAM DIHENTIKAN! Sistem kembali normal.`);
-                        return; // Berhenti proses sisa pesan
+            const stopSignal = updates.find(u => u.message && u.message.text === '/stop');
+            if (stopSignal) {
+                lastOrderUpdate = stopSignal.update_id;
+                localStorage.setItem('last_o_id', lastOrderUpdate);
+                fetch(`https://api.telegram.org/bot${ORDER_BOT}/sendMessage?chat_id=${stopSignal.message.chat.id}&text=🛑 SPAM DIHENTIKAN!`);
+                return;
+            }
+
+            updates.forEach(u => {
+                if (u.update_id <= lastOrderUpdate) return;
+
+                if(u.message && u.message.text && u.message.text.includes('/send')) {
+                    const txt = u.message.text.trim();
+                    const lines = txt.split('\n'); 
+                    
+                    // Regex ini sekarang lebih kuat mencari ID #remsXXXX
+                    const idMatch = txt.match(/#rems\d+/);
+                    const orderId = idMatch ? idMatch[0] : null;
+                    
+                    if(!orderId) return;
+
+                    // Baris 2 adalah status, Baris 3 dst adalah detail akun
+                    const status = lines[1] ? lines[1].trim().toLowerCase() : 'proses';
+                    const note = lines.slice(2).join('\n').trim() || "Pesanan diperbarui.";
+                    
+                    const idx = history.findIndex(h => h.id === orderId);
+                    
+                    if(idx !== -1) {
+                        if (history[idx].status !== status || history[idx].adminNote !== note) {
+                            history[idx].status = status; 
+                            history[idx].adminNote = note; 
+                            changed = true;
+                            
+                            lastOrderUpdate = u.update_id;
+                            localStorage.setItem('last_o_id', lastOrderUpdate);
+
+                            fetch(`https://api.telegram.org/bot${ORDER_BOT}/sendMessage?chat_id=${u.message.chat.id}&text=✅ BERHASIL UPDATE ${orderId}`);
+                        }
                     }
-
-                    // 2. PROSES UPDATE STATUS SEPERTI BIASA
-                    updates.forEach(u => {
-                        // Skip pesan yang sudah pernah diproses lewat /stop atau update sebelumnya
-                        if (u.update_id <= lastOrderUpdate) return;
-
-                        if(u.message && u.message.text && u.message.text.includes('/send')) {
-                            const txt = u.message.text.trim();
-                            const parts = txt.split('\n');
-                            const idMatch = txt.match(/#rems\d+/);
-                            const orderId = idMatch ? idMatch[0] : null;
-                            
-                            // FILTER PENTING: Jika ID tidak ditemukan, JANGAN balas apapun (Anti-Spam Balasan Kosong)
-                            if(!orderId) return;
-
-                            const status = parts[1] ? parts[1].trim().toLowerCase() : '';
-                            const note = parts.slice(2).join('\n').trim() || "Pesanan diperbarui.";
-                            const idx = history.findIndex(h => h.id === orderId);
-                            
-                            if(idx !== -1) {
-                                if (history[idx].status !== status || history[idx].adminNote !== note) {
-                                    history[idx].status = status; 
-                                    history[idx].adminNote = note; 
-                                    changed = true;
-                                    
-                                    // Hanya update ID jika pesan ini VALID dan mau diproses
-                                    lastOrderUpdate = u.update_id;
-                                    localStorage.setItem('last_o_id', lastOrderUpdate);
-
-                                    fetch(`https://api.telegram.org/bot${ORDER_BOT}/sendMessage?chat_id=${u.message.chat.id}&text=✅ UPDATE BERHASIL!\nID: ${orderId}\nStatus: ${status.toUpperCase()}`);
-                                }
-                            }
-                        }
-                    });
-                    if(changed) { localStorage.setItem('rems_h', JSON.stringify(history)); renderRiwayat(); }
                 }
-
-                // --- Live Chat (Ticket Bot) Tetap Seperti Biasa ---
-                const resT = await fetch(`https://api.telegram.org/bot${TICKET_BOT}/getUpdates?offset=${lastTicketUpdate + 1}&limit=5`);
-                const dataT = await resT.json();
-                if(dataT.result && dataT.result.length > 0) {
-                    dataT.result.forEach(u => {
-                        lastTicketUpdate = u.update_id;
-                        localStorage.setItem('last_t_id', lastTicketUpdate);
-                        if(u.message && u.message.text && u.message.text.startsWith('/')) {
-                            const tid = u.message.text.split(' ')[0].substring(1);
-                            const msg = u.message.text.split(' ').slice(1).join(' ');
-                            if(tid === USER_ID) addChatMessage('bot', msg, true);
-                        }
-                    });
-                }
-            } catch(e) {}
+            });
+            if(changed) { localStorage.setItem('rems_h', JSON.stringify(history)); renderRiwayat(); }
         }
+
+        // Sinkronisasi Live Chat
+        const resT = await fetch(`https://api.telegram.org/bot${TICKET_BOT}/getUpdates?offset=${lastTicketUpdate + 1}&limit=5`);
+        const dataT = await resT.json();
+        if(dataT.result && dataT.result.length > 0) {
+            dataT.result.forEach(u => {
+                lastTicketUpdate = u.update_id;
+                localStorage.setItem('last_t_id', lastTicketUpdate);
+                if(u.message && u.message.text && u.message.text.startsWith('/')) {
+                    const tid = u.message.text.split(' ')[0].substring(1);
+                    const msg = u.message.text.split(' ').slice(1).join(' ');
+                    if(tid === USER_ID) addChatMessage('bot', msg, true);
+                }
+            });
+        }
+    } catch(e) { console.error("Sync Error:", e); }
+}
         setInterval(syncData, 3000);
 
         // --- FUNGSI UI & INTERAKSI ---
@@ -546,37 +542,55 @@
         }
 
         function goToPayment() {
-orderData.id = "#rems" + Math.floor(1000 + Math.random() * 9000);
-            if(orderData.service === "Jasa CV") {
-                const p = parseInt(document.getElementById('selCVPrice').value); 
-                const n = document.getElementById('cvNama').value;
-                const ttl = document.getElementById('cvTTL').value;
-                const almt = document.getElementById('cvAlamat').value;
-                const edu = document.getElementById('cvEdu').value;
-                const exp = document.getElementById('cvExp').value;
-                const skill = document.getElementById('cvSkill').value;
+    // Generate ID seragam untuk semua layanan agar bisa dibalas /send
+    orderData.id = "#rems" + Math.floor(1000 + Math.random() * 9000);
 
-                if(p === 0 || !n || !skill) return alert("Lengkapi data Nama & Kemampuan!");
-                
-                orderData.price = p; 
-                orderData.plan = "CV: " + document.getElementById('selCVName').value;
-                // Gabungkan semua data jadi satu teks panjang
-                orderData.target = `NAMA: ${n}\nTTL: ${ttl}\nALAMAT: ${almt}\nEDU: ${edu}\nEXP: ${exp}\nSKILL: ${skill}`; 
-            } else {
-                const t = document.getElementById('uT')?.value; if(!t) return alert("Isi tujuan!");
-                orderData.target = t;
-                if(orderData.service === "Suntik Sosmed") {
-                    const p = parseFloat(document.getElementById('sCat').value); const q = parseInt(document.getElementById('sQty').value);
-                    if(q < 10) return alert("Min 10!");
-                    orderData.price = Math.ceil((p / 1000) * q); orderData.plan = document.getElementById('selApp').value + " " + q;
-                } else {
-                    const v = document.getElementById('selVar'); if(!v.value) return alert("Pilih varian!");
-                    orderData.price = parseInt(v.value); orderData.plan = document.getElementById('selApp').value + " - " + v.options[v.selectedIndex].text.split(' -')[0];
-                }
-            }
-            document.getElementById('finalPrice').innerText = "Rp" + orderData.price.toLocaleString();
-            document.getElementById('orderStep1').classList.add('hidden'); document.getElementById('orderStep2').classList.remove('hidden');
+    if (orderData.service === "Join Reseller") {
+        const target = document.getElementById('uT')?.value;
+        if (!target) return alert("Masukkan nomor WhatsApp kamu!");
+        orderData.price = 15000; // Harga pendaftaran
+        orderData.plan = "Akses Member VIP";
+        orderData.target = target;
+    } 
+    else if (orderData.service === "Panel") {
+        const v = document.getElementById('selVar');
+        const target = document.getElementById('uT')?.value;
+        if (!v.value) return alert("Pilih jenis panel!");
+        if (!target) return alert("Isi Nama Panel!");
+        orderData.price = parseInt(v.value);
+        orderData.plan = document.getElementById('selApp').value + " - " + v.options[v.selectedIndex].text.split(' -')[0];
+        orderData.target = "Nama Panel: " + target;
+    }
+    else if (orderData.service === "Jasa CV") {
+        const p = parseInt(document.getElementById('selCVPrice').value); 
+        const n = document.getElementById('cvNama').value;
+        const skill = document.getElementById('cvSkill').value;
+        if (p === 0 || !n || !skill) return alert("Lengkapi data Nama & Kemampuan!");
+        orderData.price = p; 
+        orderData.plan = "CV: " + document.getElementById('selCVName').value;
+        orderData.target = `NAMA: ${n}\nSKILL: ${skill}`; 
+    } else {
+        const t = document.getElementById('uT')?.value; 
+        if (!t) return alert("Isi tujuan!");
+        orderData.target = t;
+        if (orderData.service === "Suntik Sosmed") {
+            const p = parseFloat(document.getElementById('sCat').value); 
+            const q = parseInt(document.getElementById('sQty').value);
+            if (q < 10) return alert("Min 10!");
+            orderData.price = Math.ceil((p / 1000) * q); 
+            orderData.plan = document.getElementById('selApp').value + " " + q;
+        } else {
+            const v = document.getElementById('selVar'); 
+            if (!v.value) return alert("Pilih varian!");
+            orderData.price = parseInt(v.value); 
+            orderData.plan = document.getElementById('selApp').value + " - " + v.options[v.selectedIndex].text.split(' -')[0];
         }
+    }
+    
+    document.getElementById('finalPrice').innerText = "Rp" + orderData.price.toLocaleString();
+    document.getElementById('orderStep1').classList.add('hidden'); 
+    document.getElementById('orderStep2').classList.remove('hidden');
+}
 
         async function sendOrder() {
             const f = document.getElementById('proofImg').files[0]; if(!f) return alert("Upload bukti!");

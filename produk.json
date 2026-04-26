@@ -1095,12 +1095,12 @@
       {
         "n": "GREEN WHITE",
         "p": 5000,
-        "img":"https://raw.githubusercontent.com/rembostore10/remsdigi/refs/heads/main/produk/IMG_20260426_085317.jpg"
+        "img": "https://raw.githubusercontent.com/rembostore10/remsdigi/refs/heads/main/produk/IMG_20260426_085317.jpg"
       },
       {
         "n": "BLUE WHITE",
         "p": 5000,
-        "img":"https://raw.githubusercontent.com/rembostore10/remsdigi/refs/heads/main/produk/IMG_20260426_085403.jpg"
+        "img": "https://raw.githubusercontent.com/rembostore10/remsdigi/refs/heads/main/produk/IMG_20260426_085403.jpg"
       }
     ],
     "CV ATS": [
@@ -1108,6 +1108,20 @@
         "n": "BLACK WHITE",
         "p": 8000,
         "img": "https://raw.githubusercontent.com/rembostore10/remsdigi/refs/heads/main/produk/IMG_20260425_145727.jpg"
+      }
+    ]
+  },
+  "Join Reseller": {
+    "WhatsApp": [
+      {
+        "n": "1 NOMOR",
+        "p": 10000
+      }
+    ],
+    "Telegram": [
+      {
+        "n": "1 USER",
+        "p": 10000
       }
     ]
   }

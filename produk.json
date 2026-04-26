@@ -1094,11 +1094,13 @@
     "CV Biasa": [
       {
         "n": "GREEN WHITE",
-        "p": 5000
+        "p": 5000,
+        "img":"https://raw.githubusercontent.com/rembostore10/remsdigi/refs/heads/main/produk/IMG_20260426_085317.jpg"
       },
       {
         "n": "BLUE WHITE",
-        "p": 5000
+        "p": 5000,
+        "img":"https://raw.githubusercontent.com/rembostore10/remsdigi/refs/heads/main/produk/IMG_20260426_085403.jpg"
       }
     ],
     "CV ATS": [

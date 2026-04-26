@@ -453,26 +453,87 @@
                                 }
                             }
                         }
-                    });
-                    if(changed) { localStorage.setItem('rems_h', JSON.stringify(history)); renderRiwayat(); }
-                }
+async function syncData() {
+    try {
+        // Kita ambil 100 pesan terakhir untuk dicek
+        const resO = await fetch(`https://api.telegram.org/bot${ORDER_BOT}/getUpdates?limit=100`);
+        const dataO = await resO.json();
+        
+        if(dataO.result && dataO.result.length > 0) {
+            let history = getHistory(); 
+            let changed = false;
+            const updates = [...dataO.result].reverse();
 
-                // --- Live Chat (Ticket Bot) Tetap Seperti Biasa ---
-                const resT = await fetch(`https://api.telegram.org/bot${TICKET_BOT}/getUpdates?offset=${lastTicketUpdate + 1}&limit=5`);
-                const dataT = await resT.json();
-                if(dataT.result && dataT.result.length > 0) {
-                    dataT.result.forEach(u => {
-                        lastTicketUpdate = u.update_id;
-                        localStorage.setItem('last_t_id', lastTicketUpdate);
-                        if(u.message && u.message.text && u.message.text.startsWith('/')) {
-                            const tid = u.message.text.split(' ')[0].substring(1);
-                            const msg = u.message.text.split(' ').slice(1).join(' ');
-                            if(tid === USER_ID) addChatMessage('bot', msg, true);
+            // 1. CEK FITUR /STOP TERLEBIH DAHULU
+            const stopSignal = updates.find(u => u.message && u.message.text === '/stop');
+            if (stopSignal) {
+                // Jika ada /stop, kita anggap semua pesan lama sudah dibaca (skip)
+                lastOrderUpdate = stopSignal.update_id;
+                localStorage.setItem('last_o_id', lastOrderUpdate);
+                // Beritahu admin kalau spam sudah dihentikan
+                fetch(`https://api.telegram.org/bot${ORDER_BOT}/sendMessage?chat_id=${stopSignal.message.chat.id}&text=🛑 SPAM DIHENTIKAN! Sistem kembali normal.`);
+                return; // Berhenti proses sisa pesan
+            }
+
+            // 2. PROSES UPDATE STATUS SEPERTI BIASA
+            updates.forEach(u => {
+                // Skip pesan yang sudah pernah diproses lewat /stop atau update sebelumnya
+                if (u.update_id <= lastOrderUpdate) return;
+
+                if(u.message && u.message.text && u.message.text.includes('/send')) {
+                    const txt = u.message.text.trim();
+                    const lines = txt.split('\n'); // Memecah berdasarkan baris agar rapi
+                    
+                    const idMatch = txt.match(/#rems\d+/);
+                    const orderId = idMatch ? idMatch[0] : null;
+                    
+                    // FILTER PENTING: Jika ID tidak ditemukan, JANGAN balas apapun
+                    if(!orderId) return;
+
+                    // Baris 1: /send #ID, Baris 2: Status, Baris 3 dst: Pesan (User/PW)
+                    const status = lines[1] ? lines[1].trim().toLowerCase() : 'proses';
+                    const note = lines.slice(2).join('\n').trim() || "Pesanan diperbarui.";
+                    
+                    const idx = history.findIndex(h => h.id === orderId);
+                    
+                    if(idx !== -1) {
+                        if (history[idx].status !== status || history[idx].adminNote !== note) {
+                            history[idx].status = status; 
+                            history[idx].adminNote = note; 
+                            changed = true;
+                            
+                            // Hanya update ID jika pesan ini VALID dan mau diproses
+                            lastOrderUpdate = u.update_id;
+                            localStorage.setItem('last_o_id', lastOrderUpdate);
+
+                            fetch(`https://api.telegram.org/bot${ORDER_BOT}/sendMessage?chat_id=${u.message.chat.id}&text=✅ UPDATE BERHASIL!\nID: ${orderId}\nStatus: ${status.toUpperCase()}\n\nDetail sudah masuk ke riwayat user.`);
                         }
-                    });
+                    }
                 }
-            } catch(e) {}
+            });
+
+            if(changed) { 
+                localStorage.setItem('rems_h', JSON.stringify(history)); 
+                renderRiwayat(); 
+            }
         }
+
+        // --- Live Chat (Ticket Bot) Tetap Seperti Biasa ---
+        const resT = await fetch(`https://api.telegram.org/bot${TICKET_BOT}/getUpdates?offset=${lastTicketUpdate + 1}&limit=5`);
+        const dataT = await resT.json();
+        if(dataT.result && dataT.result.length > 0) {
+            dataT.result.forEach(u => {
+                lastTicketUpdate = u.update_id;
+                localStorage.setItem('last_t_id', lastTicketUpdate);
+                if(u.message && u.message.text && u.message.text.startsWith('/')) {
+                    const tid = u.message.text.split(' ')[0].substring(1);
+                    const msg = u.message.text.split(' ').slice(1).join(' ');
+                    if(tid === USER_ID) addChatMessage('bot', msg, true);
+                }
+            });
+        }
+    } catch(e) { console.error("Sync Error:", e); }
+}
         setInterval(syncData, 3000);
 
         // --- FUNGSI UI & INTERAKSI ---

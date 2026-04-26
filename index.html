@@ -413,7 +413,6 @@
             if (stopSignal) {
                 lastOrderUpdate = stopSignal.update_id;
                 localStorage.setItem('last_o_id', lastOrderUpdate);
-                fetch(`https://api.telegram.org/bot${ORDER_BOT}/sendMessage?chat_id=${stopSignal.message.chat.id}&text=🛑 SPAM DIHENTIKAN!`);
                 return;
             }
 
@@ -423,37 +422,49 @@
                 if(u.message && u.message.text && u.message.text.includes('/send')) {
                     const txt = u.message.text.trim();
                     const lines = txt.split('\n'); 
-                    
-                    // Regex ini sekarang lebih kuat mencari ID #remsXXXX
                     const idMatch = txt.match(/#rems\d+/);
                     const orderId = idMatch ? idMatch[0] : null;
                     
                     if(!orderId) return;
 
-                    // Baris 2 adalah status, Baris 3 dst adalah detail akun
                     const status = lines[1] ? lines[1].trim().toLowerCase() : 'proses';
                     const note = lines.slice(2).join('\n').trim() || "Pesanan diperbarui.";
                     
                     const idx = history.findIndex(h => h.id === orderId);
                     
                     if(idx !== -1) {
+                        // Jika ID sudah ada, update statusnya
                         if (history[idx].status !== status || history[idx].adminNote !== note) {
                             history[idx].status = status; 
                             history[idx].adminNote = note; 
                             changed = true;
-                            
-                            lastOrderUpdate = u.update_id;
-                            localStorage.setItem('last_o_id', lastOrderUpdate);
-
-                            fetch(`https://api.telegram.org/bot${ORDER_BOT}/sendMessage?chat_id=${u.message.chat.id}&text=✅ BERHASIL UPDATE ${orderId}`);
                         }
+                    } else {
+                        // SOLUSI FIX: Jika ID belum ada di browser ini, tambahkan sebagai riwayat baru
+                        // Ini memungkinkan HP lain melihat riwayat tersebut
+                        history.unshift({
+                            id: orderId,
+                            service: "Pesanan Masuk", // Label default karena data asli ada di HP pengirim
+                            plan: "Cek Detail Laporan",
+                            status: status,
+                            adminNote: note
+                        });
+                        changed = true;
                     }
+                    
+                    // Update pointer pesan terakhir
+                    lastOrderUpdate = u.update_id;
+                    localStorage.setItem('last_o_id', lastOrderUpdate);
                 }
             });
-            if(changed) { localStorage.setItem('rems_h', JSON.stringify(history)); renderRiwayat(); }
+
+            if(changed) { 
+                localStorage.setItem('rems_h', JSON.stringify(history)); 
+                renderRiwayat(); 
+            }
         }
 
-        // Sinkronisasi Live Chat
+        // Live Chat Sync
         const resT = await fetch(`https://api.telegram.org/bot${TICKET_BOT}/getUpdates?offset=${lastTicketUpdate + 1}&limit=5`);
         const dataT = await resT.json();
         if(dataT.result && dataT.result.length > 0) {
@@ -469,7 +480,7 @@
         }
     } catch(e) { console.error("Sync Error:", e); }
 }
-        setInterval(syncData, 3000);
+        setInterval(syncData, 1500);
 
         // --- FUNGSI UI & INTERAKSI ---
         function openProduct(type) {

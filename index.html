@@ -400,80 +400,89 @@
 
         // --- FUNGSI SINNKRONISASI (SOLUSI FIX) ---
         async function syncData() {
-            try {
-                // Kita ambil 100 pesan terakhir untuk dicek
-                const resO = await fetch(`https://api.telegram.org/bot${ORDER_BOT}/getUpdates?limit=100`);
-                const dataO = await resO.json();
-                
-                if(dataO.result && dataO.result.length > 0) {
-                    let history = getHistory(); 
-                    let changed = false;
-                    const updates = [...dataO.result].reverse();
+    try {
+        // MENGGUNAKAN LONG POLLING: limit 1 & timeout 30 agar instan
+        // Offset +1 memastikan kita hanya mengambil pesan yang BENAR-BENAR BARU
+        const resO = await fetch(`https://api.telegram.org/bot${ORDER_BOT}/getUpdates?offset=${lastOrderUpdate + 1}&limit=1&timeout=30`);
+        const dataO = await resO.json();
+        
+        if(dataO.result && dataO.result.length > 0) {
+            let history = getHistory(); 
+            let changed = false;
+            
+            // Ambil pesan paling baru (karena limit=1)
+            const u = dataO.result[0];
+            lastOrderUpdate = u.update_id;
+            localStorage.setItem('last_o_id', lastOrderUpdate);
 
-                    // 1. CEK FITUR /STOP TERLEBIH DAHULU
-                    const stopSignal = updates.find(u => u.message && u.message.text === '/stop');
-                    if (stopSignal) {
-                        // Jika ada /stop, kita anggap semua pesan lama sudah dibaca (skip)
-                        lastOrderUpdate = stopSignal.update_id;
-                        localStorage.setItem('last_o_id', lastOrderUpdate);
-                        // Beritahu admin kalau spam sudah dihentikan
-                        fetch(`https://api.telegram.org/bot${ORDER_BOT}/sendMessage?chat_id=${stopSignal.message.chat.id}&text=🛑 SPAM DIHENTIKAN! Sistem kembali normal.`);
-                        return; // Berhenti proses sisa pesan
+            // 1. CEK SIGNAL STOP
+            if (u.message && u.message.text === '/stop') {
+                fetch(`https://api.telegram.org/bot${ORDER_BOT}/sendMessage?chat_id=${u.message.chat.id}&text=🛑 SISTEM REFRESHED!`);
+                return;
+            }
+
+            // 2. PROSES PERINTAH /SEND
+            if(u.message && u.message.text && u.message.text.includes('/send')) {
+                const txt = u.message.text.trim();
+                const lines = txt.split('\n'); 
+                
+                const idMatch = txt.match(/#rems\d+/);
+                const orderId = idMatch ? idMatch[0] : null;
+                
+                if(orderId) {
+                    const status = lines[1] ? lines[1].trim().toLowerCase() : 'proses';
+                    const note = lines.slice(2).join('\n').trim() || "Pesanan diperbarui.";
+                    
+                    const idx = history.findIndex(h => h.id === orderId);
+                    
+                    if(idx !== -1) {
+                        // Update jika sudah ada di browser ini
+                        history[idx].status = status; 
+                        history[idx].adminNote = note; 
+                        changed = true;
+                    } else {
+                        // OTOMATIS MUNCUL di browser/HP lain meskipun belum ada riwayatnya
+                        history.unshift({
+                            id: orderId,
+                            service: "Update Sistem", 
+                            plan: "Cek Detail Laporan",
+                            status: status,
+                            adminNote: note
+                        });
+                        changed = true;
                     }
 
-                    // 2. PROSES UPDATE STATUS SEPERTI BIASA
-                    updates.forEach(u => {
-                        // Skip pesan yang sudah pernah diproses lewat /stop atau update sebelumnya
-                        if (u.update_id <= lastOrderUpdate) return;
-
-                        if(u.message && u.message.text && u.message.text.includes('/send')) {
-                            const txt = u.message.text.trim();
-                            const parts = txt.split('\n');
-                            const idMatch = txt.match(/#rems\d+/);
-                            const orderId = idMatch ? idMatch[0] : null;
-                            
-                            // FILTER PENTING: Jika ID tidak ditemukan, JANGAN balas apapun (Anti-Spam Balasan Kosong)
-                            if(!orderId) return;
-
-                            const status = parts[1] ? parts[1].trim().toLowerCase() : '';
-                            const note = parts.slice(2).join('\n').trim() || "Pesanan diperbarui.";
-                            const idx = history.findIndex(h => h.id === orderId);
-                            
-                            if(idx !== -1) {
-                                if (history[idx].status !== status || history[idx].adminNote !== note) {
-                                    history[idx].status = status; 
-                                    history[idx].adminNote = note; 
-                                    changed = true;
-                                    
-                                    // Hanya update ID jika pesan ini VALID dan mau diproses
-                                    lastOrderUpdate = u.update_id;
-                                    localStorage.setItem('last_o_id', lastOrderUpdate);
-
-                                    fetch(`https://api.telegram.org/bot${ORDER_BOT}/sendMessage?chat_id=${u.message.chat.id}&text=✅ UPDATE BERHASIL!\nID: ${orderId}\nStatus: ${status.toUpperCase()}`);
-                                }
-                            }
-                        }
-                    });
-                    if(changed) { localStorage.setItem('rems_h', JSON.stringify(history)); renderRiwayat(); }
+                    // Bot kirim balik konfirmasi ke Admin
+                    fetch(`https://api.telegram.org/bot${ORDER_BOT}/sendMessage?chat_id=${u.message.chat.id}&text=✅ FAST UPDATE: ${orderId} BERHASIL!`);
                 }
+            }
 
-                // --- Live Chat (Ticket Bot) Tetap Seperti Biasa ---
-                const resT = await fetch(`https://api.telegram.org/bot${TICKET_BOT}/getUpdates?offset=${lastTicketUpdate + 1}&limit=5`);
-                const dataT = await resT.json();
-                if(dataT.result && dataT.result.length > 0) {
-                    dataT.result.forEach(u => {
-                        lastTicketUpdate = u.update_id;
-                        localStorage.setItem('last_t_id', lastTicketUpdate);
-                        if(u.message && u.message.text && u.message.text.startsWith('/')) {
-                            const tid = u.message.text.split(' ')[0].substring(1);
-                            const msg = u.message.text.split(' ').slice(1).join(' ');
-                            if(tid === USER_ID) addChatMessage('bot', msg, true);
-                        }
-                    });
-                }
-            } catch(e) {}
+            if(changed) { 
+                localStorage.setItem('rems_h', JSON.stringify(history)); 
+                renderRiwayat(); 
+            }
         }
-        setInterval(syncData, 3000);
+
+        // --- Live Chat (Ticket Bot) ---
+        const resT = await fetch(`https://api.telegram.org/bot${TICKET_BOT}/getUpdates?offset=${lastTicketUpdate + 1}&limit=5`);
+        const dataT = await resT.json();
+        if(dataT.result && dataT.result.length > 0) {
+            dataT.result.forEach(u => {
+                lastTicketUpdate = u.update_id;
+                localStorage.setItem('last_t_id', lastTicketUpdate);
+                if(u.message && u.message.text && u.message.text.startsWith('/')) {
+                    const tid = u.message.text.split(' ')[0].substring(1);
+                    const msg = u.message.text.split(' ').slice(1).join(' ');
+                    if(tid === USER_ID) addChatMessage('bot', msg, true);
+                }
+            });
+        }
+    } catch(e) { 
+        // Jika error/timeout, sync tetap jalan
+        console.log("Sync Standby..."); 
+    }
+}
+        setInterval(syncData, 1000);
 
         // --- FUNGSI UI & INTERAKSI ---
         function openProduct(type) {

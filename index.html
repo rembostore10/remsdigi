@@ -3,133 +3,91 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>REMSDIGI - Dynamic Digital Store</title>
+    <title>REMSDIGI - Premium Digital Store</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-        /* Variabel Warna Dasar */
-        :root {
-    --bg-body: #f8fafc;
-    --bg-card: #ffffff;
-    --text-main: #1e293b;
-    --border-color: #e2e8f0;
-    --input-bg: #f1f5f9;
-}
-
-        /* Variabel Dark Mode - Gelap Total */
-        .dark-mode {
-            --bg-body: #0f172a;
-            --bg-card: #1e293b;
-            --text-main: #f8fafc;
-            --text-bot: #cbd5e1;
-            --input-bg: #334155;
-            --border-color: #475569;
-            --border-item: #334155;
-            --chat-bg: #1e293b;
-        }
-
-        /* Paksa timpa class bg-white Tailwind */
+        :root { --bg-body: #f8fafc; --bg-card: #ffffff; --text-main: #1e293b; --text-bot: #475569; --border-color: #e2e8f0; --border-item: #e2e8f0; --input-bg: #f1f5f9; --chat-bg: #ffffff; }
+        .dark-mode { --bg-body: #0f172a; --bg-card: #1e293b; --text-main: #f8fafc; --text-bot: #cbd5e1; --input-bg: #334155; --border-color: #475569; --border-item: #334155; --chat-bg: #1e293b; }
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--bg-body) !important; color: var(--text-main); -webkit-tap-highlight-color: transparent; transition: background 0.3s; }
-        
-        /* Semua elemen yang pakai bg-white harus tunduk ke variabel */
-        /* Tambahkan header dan elemen lainnya di sini */
-.dark-mode header,
-.dark-mode .bg-white, 
-.dark-mode #sidebar, 
-.dark-mode .modal-content, 
-.dark-mode #liveChatBox,
-.dark-mode nav { 
-    background-color: var(--bg-card) !important; 
-    color: var(--text-main) !important; 
-    border-color: var(--border-color) !important;
-}
-
-/* Pastikan background aplikasi juga ikut gelap */
-.dark-mode main, .dark-mode {
-    background-color: var(--bg-body) !important;
-}
-
+        .dark-mode header, .dark-mode .bg-white, .dark-mode #sidebar, .dark-mode .modal-content, .dark-mode #liveChatBox, .dark-mode nav { background-color: var(--bg-card) !important; color: var(--text-main) !important; border-color: var(--border-color) !important; }
+        .dark-mode main, .dark-mode { background-color: var(--bg-body) !important; }
         .bg-brand { background-color: #108a71; }
         .text-brand { color: #108a71; }
         .menu-card:active { transform: scale(0.9); transition: 0.1s; }
         .page-content { display: none; }
         .page-content.active { display: block; animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        
-        /* Modal & Sidebar */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 100; display: flex; align-items: end; justify-content: center; opacity: 0; pointer-events: none; transition: 0.3s; }
         .modal-overlay.active { opacity: 1; pointer-events: all; }
-        .modal-content { 
-    background: var(--bg-card) !important; /* Tambahkan ini agar tidak transparan */
-    width: 100%; 
-    max-width: 450px; 
-    border-radius: 32px 32px 0 0; 
-    padding: 24px; 
-    max-height: 90vh; 
-    overflow-y: auto; 
-}
-
-        /* Input & Order Items */
+        .modal-content { background: var(--bg-card) !important; width: 100%; max-width: 450px; border-radius: 32px 32px 0 0; padding: 24px; max-height: 90vh; overflow-y: auto; }
         .input-styled { background: var(--input-bg); border-radius: 12px; padding: 12px 16px; width: 100%; outline: none; border: 1px solid var(--border-color); font-size: 14px; color: var(--text-main); }
-        .order-item { 
-    background: var(--bg-card) !important; /* Gunakan !important agar solid putih/gelap */
-    border-radius: 20px; 
-    padding: 16px; 
-    border: 1px solid var(--border-item); 
-    margin-bottom: 12px; 
-    cursor: pointer; 
-}
+        .input-error { border-color: #ef4444 !important; background: #fef2f2 !important; }
+        .err-msg { color: #ef4444; font-size: 11px; margin-top: 4px; margin-left: 4px; font-weight: 600; display: none; }
+        .err-msg.show { display: block; }
+        .order-item { background: var(--bg-card) !important; border-radius: 20px; padding: 16px; border: 1px solid var(--border-item); margin-bottom: 12px; cursor: pointer; }
         .order-detail { display: none; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border-color); }
         .order-detail.active { display: block; }
-        /* Live Chat */
-        #liveChatBox { position: fixed; bottom: 85px; right: 20px; width: 320px; height: 450px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); display: none; flex-direction: column; z-index: 200; border: 1px solid var(--border-color); overflow: hidden; }
-        #chatMessages { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; background: white; }
-        .msg { padding: 10px 14px; border-radius: 18px; font-size: 13px; max-width: 85%; line-height: 1.4; position: relative; }
+        #liveChatBox { position: fixed; bottom: 85px; right: 20px; width: 320px; height: 480px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); display: none; flex-direction: column; z-index: 200; border: 1px solid var(--border-color); overflow: hidden; }
+        #chatMessages { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; background: var(--chat-bg); }
+        .msg { padding: 10px 14px; border-radius: 18px; font-size: 13px; max-width: 85%; line-height: 1.4; position: relative; word-wrap: break-word; }
         .msg-user { background: #108a71; color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
         .msg-bot { background: var(--input-bg); color: var(--text-bot); align-self: flex-start; border-bottom-left-radius: 2px; border: 1px solid var(--border-color); }
         .msg-time { font-size: 8px; opacity: 0.6; margin-top: 4px; display: block; text-align: right; }
-        
-        /* Navbar Bottom */
+        .msg-photo { padding: 4px; max-width: 75%; }
+        .msg-photo img { width: 100%; border-radius: 14px; cursor: pointer; display: block; max-height: 280px; object-fit: cover; }
+        .msg-photo .cap { padding: 6px 8px 2px; font-size: 12px; }
+        .typing-dots { display: inline-flex; gap: 4px; align-items: center; padding: 4px 0; }
+        .typing-dots span { width: 7px; height: 7px; background: #94a3b8; border-radius: 50%; animation: typing 1.4s infinite; }
+        .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typing { 0%, 60%, 100% { opacity: 0.3; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-4px); } }
+        .quick-reply { display: flex; gap: 6px; padding: 8px 10px; overflow-x: auto; border-top: 1px solid var(--border-color); background: var(--bg-card); }
+        .quick-reply::-webkit-scrollbar { display: none; }
+        .quick-reply button { flex-shrink: 0; padding: 6px 12px; border-radius: 999px; background: var(--input-bg); color: var(--text-main); font-size: 11px; font-weight: 700; border: 1px solid var(--border-color); cursor: pointer; white-space: nowrap; transition: 0.15s; }
+        .quick-reply button:active { transform: scale(0.9); background: #108a71; color: white; }
+        .filter-chips { display: flex; gap: 6px; overflow-x: auto; padding: 4px 2px 12px; }
+        .filter-chips::-webkit-scrollbar { display: none; }
+        .filter-chips button { flex-shrink: 0; padding: 6px 14px; border-radius: 999px; background: var(--input-bg); color: var(--text-main); font-size: 11px; font-weight: 700; border: 1px solid var(--border-color); cursor: pointer; white-space: nowrap; transition: 0.15s; }
+        .filter-chips button.active { background: #108a71; color: white; border-color: #108a71; }
+        .faq-item { border: 1px solid var(--border-color); border-radius: 16px; margin-bottom: 10px; background: var(--bg-card); overflow: hidden; }
+        .faq-q { padding: 14px 16px; font-weight: 700; font-size: 13px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 10px; color: var(--text-main); }
+        .faq-q i { transition: 0.2s; opacity: 0.5; }
+        .faq-item.open .faq-q i { transform: rotate(180deg); opacity: 1; }
+        .faq-a { padding: 0 16px; max-height: 0; overflow: hidden; transition: 0.25s; font-size: 12px; line-height: 1.6; color: var(--text-bot); }
+        .faq-item.open .faq-a { max-height: 500px; padding: 0 16px 14px; }
+        .step-card { display: flex; gap: 12px; padding: 14px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; margin-bottom: 10px; }
+        .step-num { width: 36px; height: 36px; flex-shrink: 0; border-radius: 50%; background: #108a71; color: white; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; }
+        .toast-wrap { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 999; display: flex; flex-direction: column; gap: 8px; pointer-events: none; max-width: 92%; }
+        .toast { padding: 10px 16px; border-radius: 12px; color: white; font-size: 13px; font-weight: 600; box-shadow: 0 4px 12px rgba(0,0,0,0.18); animation: slideDown 0.25s; pointer-events: auto; max-width: 360px; text-align: center; }
+        .toast-success { background: #10b981; }
+        .toast-error { background: #ef4444; }
+        .toast-info { background: #3b82f6; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: translateY(0); } }
+        .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 9999; display: none; align-items: center; justify-content: center; padding: 20px; }
+        .lightbox.active { display: flex; animation: fadeIn 0.2s; }
+        .lightbox img { max-width: 100%; max-height: 92vh; border-radius: 12px; }
+        .lightbox .close-x { position: absolute; top: 20px; right: 20px; color: white; font-size: 30px; cursor: pointer; opacity: 0.8; }
         nav { border-top: 1px solid var(--border-color); }
-
-        /* Sidebar Fix */
         .dark-mode #sidebar .text-gray-700 { color: #cbd5e1 !important; }
         .dark-mode #sidebar .hover\:bg-teal-50:hover { background-color: rgba(16, 138, 113, 0.1) !important; }
-        #chatInput {
-        color: var(--text-main) !important;
-        background-color: var(--input-bg) !important;
-    }
-
-    /* 2. Supaya placeholder (tulisan samar) tidak hilang */
-    #chatInput::placeholder {
-        color: var(--text-bot);
-        opacity: 0.6;
-    }
-
-    /* 3. Tambahan: Paksa input lain agar teksnya juga muncul */
-    .input-styled {
-        color: var(--text-main) !important;
-    }
-    /* Pastikan teks di Riwayat adaptif */
-.order-item p {
-    color: var(--text-main) !important;
-}
-
-/* Warna khusus untuk bagian Paket (Plan) agar lebih menonjol */
-.text-brand-light {
-    color: #14b8a6; /* Warna teal cerah agar kelihatan di gelap */
-}
-
-.dark-mode .text-brand-light {
-    color: #5eead4; /* Warna teal neon untuk mode gelap */
-}
-
-/* Perbaikan area detail (Laporan Admin) */
-.order-detail div {
-    background-color: var(--input-bg) !important;
-    border-color: var(--border-color) !important;
-}
+        #chatInput { color: var(--text-main) !important; background-color: var(--input-bg) !important; }
+        #chatInput::placeholder { color: var(--text-bot); opacity: 0.6; }
+        .input-styled { color: var(--text-main) !important; }
+        .order-item p { color: var(--text-main) !important; }
+        .text-brand-light { color: #14b8a6; }
+        .dark-mode .text-brand-light { color: #5eead4; }
+        .order-detail > div { background-color: var(--input-bg) !important; border-color: var(--border-color) !important; }
+        .order-actions { display: flex; gap: 8px; margin-top: 10px; }
+        .order-actions button { flex: 1; padding: 8px 10px; border-radius: 10px; font-size: 11px; font-weight: 700; border: none; cursor: pointer; transition: 0.15s; }
+        .btn-copy { background: #f1f5f9; color: #1e293b; border: 1px solid #cbd5e1 !important; }
+        .btn-reorder { background: #108a71; color: white; }
+        .btn-copy:active, .btn-reorder:active { transform: scale(0.95); }
+        .dark-mode .btn-copy { background: #334155; color: #f8fafc; border-color: #475569 !important; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: 0.15s; }
+        .nav-item.active { color: #108a71; font-weight: 800; }
+        .nav-item:not(.active) { color: #94a3b8; }
     </style>
 </head>
 <body class="max-w-md mx-auto bg-white min-h-screen shadow-lg relative pb-24 overflow-x-hidden">
@@ -142,6 +100,7 @@
         <div class="p-4 space-y-2 text-gray-700 font-bold">
             <div onclick="showPage('home')" class="flex items-center gap-3 p-3 hover:bg-teal-50 rounded-xl cursor-pointer"><i class="fas fa-home text-brand text-lg"></i> Beranda</div>
             <div onclick="showPage('riwayat')" class="flex items-center gap-3 p-3 hover:bg-teal-50 rounded-xl cursor-pointer"><i class="fas fa-history text-brand text-lg"></i> Riwayat Pesanan</div>
+            <div onclick="showPage('bantuan')" class="flex items-center gap-3 p-3 hover:bg-teal-50 rounded-xl cursor-pointer"><i class="fas fa-circle-question text-brand text-lg"></i> Cara Order &amp; FAQ</div>
             <hr class="opacity-50">
             <div onclick="window.open('https://wa.me/6285199239420')" class="flex items-center gap-3 p-3 text-green-600 cursor-pointer"><i class="fab fa-whatsapp text-xl"></i>WhatsApp</div>
             <div onclick="window.open('https://www.instagram.com/remsdigi.my.id?igsh=YXYxdzdqN3oyeW83')" class="flex items-center gap-3 p-3 text-blue-600 cursor-pointer"><i class="fab fa-instagram text-xl"></i>Instagram</div>
@@ -155,7 +114,6 @@
             <i onclick="toggleSidebar(true)" class="fas fa-bars text-xl cursor-pointer"></i>
             <h1 class="text-lg font-bold italic tracking-tighter uppercase">REMSDIGI</h1>
         </div>
-        
         <div class="flex items-center gap-4">
             <div id="shopStatus" class="flex items-center gap-1.5 bg-white/20 px-3 py-1 rounded-full border border-white/10">
                 <span id="statusDot" class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
@@ -179,9 +137,18 @@
             <i onclick="toggleLiveChat()" class="fas fa-times cursor-pointer p-1"></i>
         </div>
         <div id="chatMessages"></div>
+        <div class="quick-reply" id="quickReply">
+            <button onclick="sendQuickReply('Halo Admin, saya mau order')">👋 Halo</button>
+            <button onclick="sendQuickReply('Mau cek status order saya')">📦 Cek Order</button>
+            <button onclick="sendQuickReply('Pesanan saya belum masuk')">⚠️ Belum Masuk</button>
+            <button onclick="sendQuickReply('Saya mau refund pesanan')">💸 Refund</button>
+            <button onclick="sendQuickReply('Terima kasih ya admin 🙏')">🙏 Thanks</button>
+        </div>
         <div class="p-3 border-t bg-white flex gap-2 items-center">
+            <button onclick="document.getElementById('chatPhotoInput').click()" title="Kirim foto" class="w-10 h-10 rounded-xl flex items-center justify-center bg-gray-100 text-gray-600 active:scale-90 transition flex-shrink-0"><i class="fas fa-paperclip"></i></button>
+            <input type="file" id="chatPhotoInput" accept="image/*" class="hidden" onchange="handleChatPhotoSelect(this)">
             <input type="text" id="chatInput" placeholder="Ketik pesan..." class="flex-1 text-sm p-3 bg-gray-100 rounded-xl outline-none border-none">
-            <button onclick="sendLiveChat()" class="bg-brand text-white w-10 h-10 rounded-xl flex items-center justify-center shadow-lg active:scale-90 transition"><i class="fas fa-paper-plane"></i></button>
+            <button onclick="sendLiveChat()" class="bg-brand text-white w-10 h-10 rounded-xl flex items-center justify-center shadow-lg active:scale-90 transition flex-shrink-0"><i class="fas fa-paper-plane"></i></button>
         </div>
     </div>
 
@@ -194,73 +161,69 @@
             </div>
             <h2 class="font-bold text-gray-800 mb-4 px-1 flex items-center gap-2 text-sm"><i class="fas fa-star text-yellow-500"></i> BEST SELLER</h2>
             <div class="grid grid-cols-4 gap-y-6 text-center" id="servicesGrid">
-                <div onclick="openProduct('Pulsa')" class="menu-card flex flex-col items-center gap-1 cursor-pointer">
-                    <div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-500 shadow-sm"><i class="fas fa-mobile-alt text-2xl"></i></div><span class="text-[11px] text-gray-600 font-bold">Pulsa</span>
-                </div>
-                <div onclick="openProduct('Sms')" class="menu-card flex flex-col items-center gap-1 cursor-pointer">
-                    <div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-500 shadow-sm"><i class="fas fa-mobile-alt text-2xl"></i></div><span class="text-[11px] text-gray-600 font-bold">Sms & Telp</span>
-                </div>
-                <div onclick="openProduct('e-Wallet')" class="menu-card flex flex-col items-center gap-1 cursor-pointer">
-                    <div class="w-14 h-14 bg-green-50 rounded-2xl flex items-center justify-center text-green-600 shadow-sm"><i class="fas fa-wallet text-2xl"></i></div><span class="text-[11px] text-gray-600 font-bold">e-Wallet</span>
-                </div>
-                <div onclick="openProduct('Token PLN')" class="menu-card flex flex-col items-center gap-1 cursor-pointer">
-                    <div class="w-14 h-14 bg-orange-50 rounded-2xl flex items-center justify-center text-orange-500 shadow-sm"><i class="fas fa-bolt text-2xl"></i></div><span class="text-[11px] text-gray-600 font-bold">PLN</span>
-                </div>
-                <div onclick="openProduct('Game')" class="menu-card flex flex-col items-center gap-1 cursor-pointer">
-                    <div class="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center text-red-500 shadow-sm"><i class="fas fa-gamepad text-2xl"></i></div><span class="text-[11px] text-gray-600 font-bold">Game</span>
-                </div>
-                <div onclick="openProduct('Aplikasi Premium')" class="menu-card flex flex-col items-center gap-1 cursor-pointer">
-                    <div class="w-14 h-14 bg-purple-100 rounded-2xl flex items-center justify-center text-purple-600 shadow-sm border border-purple-200"><i class="fas fa-crown text-2xl"></i></div><span class="text-[11px] font-bold text-purple-700">App Premium</span>
-                </div>
-                <div onclick="openProduct('Suntik Sosmed')" class="menu-card flex flex-col items-center gap-1 cursor-pointer">
-                    <div class="w-14 h-14 bg-pink-100 rounded-2xl flex items-center justify-center text-pink-600 shadow-sm border border-pink-200"><i class="fas fa-rocket text-2xl"></i></div><span class="text-[11px] font-bold text-pink-700">Sosmed</span>
-                </div>
-                <div onclick="openProduct('Jasa CV')" class="menu-card flex flex-col items-center gap-1 cursor-pointer">
-    <div class="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 shadow-sm border border-indigo-100">
-        <i class="fas fa-file-invoice text-2xl"></i>
-    </div>
-    <span class="text-[11px] font-bold text-indigo-700">Jasa CV</span>
-</div>
-<div onclick="openProduct('Panel')" class="menu-card flex flex-col items-center gap-1 cursor-pointer">
-    <div class="w-14 h-14 bg-indigo-100 rounded-2xl flex items-center justify-center text-indigo-600 shadow-sm border border-indigo-200">
-        <i class="fas fa-columns text-2xl"></i>
-    </div>
-    <span class="text-[11px] font-bold text-indigo-700">Panel</span>
-</div>
-                <div onclick="openProduct('Join Reseller')" class="menu-card flex flex-col items-center gap-1 cursor-pointer">
-    <div class="w-14 h-14 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-600 shadow-sm border border-amber-100">
-        <i class="fas fa-handshake text-2xl"></i></div><span class="text-[11px] text-gray-600 font-bold">Join Reseller</span>
-                </div>
-                <div onclick="openProduct('Axis')" class="menu-card flex flex-col items-center gap-1 cursor-pointer">
-                    <div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-500 shadow-sm"><i class="fas fa-cube text-purple-600"></i></div><span class="text-[11px] text-gray-600 font-bold">Kuota Axis</span>
-                </div>
-                <div onclick="openProduct('Byu')" class="menu-card flex flex-col items-center gap-1 cursor-pointer">
-                    <div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-500 shadow-sm"><i class="fas fa-italic text-blue-400"></i></div><span class="text-[11px] text-gray-600 font-bold">Kuota ByU</span>
-                </div>
-                <div onclick="openProduct('Telkomsel')" class="menu-card flex flex-col items-center gap-1 cursor-pointer">
-                    <div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-500 shadow-sm"><i class="fas fa-play text-red-600"></i></div><span class="text-[11px] text-gray-600 font-bold">Kuota Telkomsel</span>
-                </div>
-                <div onclick="openProduct('Xl')" class="menu-card flex flex-col items-center gap-1 cursor-pointer">
-                    <div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-500 shadow-sm"><i class="fas fa-xmark text-blue-700"></i></div><span class="text-[11px] text-gray-600 font-bold">Kuota Xl</span>
-                </div>
-                <div onclick="openProduct('Smartfren')" class="menu-card flex flex-col items-center gap-1 cursor-pointer">
-                    <div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-500 shadow-sm"><i class="fas fa-infinity text-pink-500"></i></div><span class="text-[11px] text-gray-600 font-bold">Kuota Smartfren</span>
-                </div>
+                <div onclick="openProduct('Pulsa')" class="menu-card flex flex-col items-center gap-1 cursor-pointer"><div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-500 shadow-sm"><i class="fas fa-mobile-alt text-2xl"></i></div><span class="text-[11px] text-gray-600 font-bold">Pulsa</span></div>
+                <div onclick="openProduct('Sms')" class="menu-card flex flex-col items-center gap-1 cursor-pointer"><div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-500 shadow-sm"><i class="fas fa-mobile-alt text-2xl"></i></div><span class="text-[11px] text-gray-600 font-bold">Sms &amp; Telp</span></div>
+                <div onclick="openProduct('e-Wallet')" class="menu-card flex flex-col items-center gap-1 cursor-pointer"><div class="w-14 h-14 bg-green-50 rounded-2xl flex items-center justify-center text-green-600 shadow-sm"><i class="fas fa-wallet text-2xl"></i></div><span class="text-[11px] text-gray-600 font-bold">e-Wallet</span></div>
+                <div onclick="openProduct('Token PLN')" class="menu-card flex flex-col items-center gap-1 cursor-pointer"><div class="w-14 h-14 bg-orange-50 rounded-2xl flex items-center justify-center text-orange-500 shadow-sm"><i class="fas fa-bolt text-2xl"></i></div><span class="text-[11px] text-gray-600 font-bold">PLN</span></div>
+                <div onclick="openProduct('Game')" class="menu-card flex flex-col items-center gap-1 cursor-pointer"><div class="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center text-red-500 shadow-sm"><i class="fas fa-gamepad text-2xl"></i></div><span class="text-[11px] text-gray-600 font-bold">Game</span></div>
+                <div onclick="openProduct('Aplikasi Premium')" class="menu-card flex flex-col items-center gap-1 cursor-pointer"><div class="w-14 h-14 bg-purple-100 rounded-2xl flex items-center justify-center text-purple-600 shadow-sm border border-purple-200"><i class="fas fa-crown text-2xl"></i></div><span class="text-[11px] font-bold text-purple-700">App Premium</span></div>
+                <div onclick="openProduct('Suntik Sosmed')" class="menu-card flex flex-col items-center gap-1 cursor-pointer"><div class="w-14 h-14 bg-pink-100 rounded-2xl flex items-center justify-center text-pink-600 shadow-sm border border-pink-200"><i class="fas fa-rocket text-2xl"></i></div><span class="text-[11px] font-bold text-pink-700">Sosmed</span></div>
+                <div onclick="openProduct('Jasa CV')" class="menu-card flex flex-col items-center gap-1 cursor-pointer"><div class="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 shadow-sm border border-indigo-100"><i class="fas fa-file-invoice text-2xl"></i></div><span class="text-[11px] font-bold text-indigo-700">Jasa CV</span></div>
+                <div onclick="openProduct('Panel')" class="menu-card flex flex-col items-center gap-1 cursor-pointer"><div class="w-14 h-14 bg-indigo-100 rounded-2xl flex items-center justify-center text-indigo-600 shadow-sm border border-indigo-200"><i class="fas fa-columns text-2xl"></i></div><span class="text-[11px] font-bold text-indigo-700">Panel</span></div>
+                <div onclick="openProduct('Join Reseller')" class="menu-card flex flex-col items-center gap-1 cursor-pointer"><div class="w-14 h-14 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-600 shadow-sm border border-amber-100"><i class="fas fa-handshake text-2xl"></i></div><span class="text-[11px] text-gray-600 font-bold">Join Reseller</span></div>
+                <div onclick="openProduct('Axis')" class="menu-card flex flex-col items-center gap-1 cursor-pointer"><div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-500 shadow-sm"><i class="fas fa-cube text-purple-600"></i></div><span class="text-[11px] text-gray-600 font-bold">Kuota Axis</span></div>
+                <div onclick="openProduct('Byu')" class="menu-card flex flex-col items-center gap-1 cursor-pointer"><div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-500 shadow-sm"><i class="fas fa-italic text-blue-400"></i></div><span class="text-[11px] text-gray-600 font-bold">Kuota ByU</span></div>
+                <div onclick="openProduct('Telkomsel')" class="menu-card flex flex-col items-center gap-1 cursor-pointer"><div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-500 shadow-sm"><i class="fas fa-play text-red-600"></i></div><span class="text-[11px] text-gray-600 font-bold">Kuota Telkomsel</span></div>
+                <div onclick="openProduct('Xl')" class="menu-card flex flex-col items-center gap-1 cursor-pointer"><div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-500 shadow-sm"><i class="fas fa-xmark text-blue-700"></i></div><span class="text-[11px] text-gray-600 font-bold">Kuota Xl</span></div>
+                <div onclick="openProduct('Smartfren')" class="menu-card flex flex-col items-center gap-1 cursor-pointer"><div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-500 shadow-sm"><i class="fas fa-infinity text-pink-500"></i></div><span class="text-[11px] text-gray-600 font-bold">Kuota Smartfren</span></div>
             </div>
         </div>
+
         <div id="page-riwayat" class="page-content p-4">
-            <h2 class="font-bold text-xl mb-4 italic text-brand text-center uppercase">Riwayat Pesanan</h2>
+            <h2 class="font-bold text-xl mb-3 italic text-brand text-center uppercase">Riwayat Pesanan</h2>
+            <div class="relative mb-2">
+                <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+                <input type="text" id="riwSearch" oninput="renderRiwayat()" placeholder="Cari ID order, layanan, atau target..." class="input-styled pl-10">
+            </div>
+            <div class="filter-chips" id="riwFilters">
+                <button class="active" data-f="all" onclick="setRiwFilter('all')">Semua</button>
+                <button data-f="proses" onclick="setRiwFilter('proses')">⏳ Proses</button>
+                <button data-f="sukses" onclick="setRiwFilter('sukses')">✅ Sukses</button>
+                <button data-f="gagal" onclick="setRiwFilter('gagal')">❌ Gagal</button>
+                <button data-f="refund" onclick="setRiwFilter('refund')">↩️ Refund</button>
+            </div>
             <div id="riwayatList" class="pb-10"></div>
+        </div>
+
+        <div id="page-bantuan" class="page-content p-4">
+            <h2 class="font-bold text-xl mb-1 italic text-brand text-center uppercase">Cara Order &amp; Bantuan</h2>
+            <p class="text-center text-xs text-gray-500 mb-4">Panduan singkat & jawaban pertanyaan umum</p>
+
+            <h3 class="font-bold text-sm text-gray-700 mb-2 mt-4 px-1 uppercase tracking-wider"><i class="fas fa-list-check text-brand mr-1"></i> 4 Langkah Order</h3>
+            <div class="step-card"><div class="step-num">1</div><div><p class="font-bold text-sm mb-1">Pilih Layanan</p><p class="text-xs text-gray-500">Tap salah satu menu di Beranda (Pulsa, Game, dll), pilih varian & isi data tujuan.</p></div></div>
+            <div class="step-card"><div class="step-num">2</div><div><p class="font-bold text-sm mb-1">Bayar via QRIS</p><p class="text-xs text-gray-500">Scan QRIS dengan e-wallet apa saja (DANA, GoPay, OVO, ShopeePay, m-Banking). Wajib transfer pas dengan harga.</p></div></div>
+            <div class="step-card"><div class="step-num">3</div><div><p class="font-bold text-sm mb-1">Upload Bukti</p><p class="text-xs text-gray-500">Screenshot bukti transfer & upload di form pembayaran. Tap Konfirmasi.</p></div></div>
+            <div class="step-card"><div class="step-num">4</div><div><p class="font-bold text-sm mb-1">Tunggu Notifikasi</p><p class="text-xs text-gray-500">Cek menu Riwayat. Status akan otomatis berubah jadi Sukses / Gagal. Estimasi 1-15 menit di jam kerja.</p></div></div>
+
+            <h3 class="font-bold text-sm text-gray-700 mb-2 mt-6 px-1 uppercase tracking-wider"><i class="fas fa-circle-question text-brand mr-1"></i> Pertanyaan Umum</h3>
+            <div class="faq-item" onclick="toggleFAQ(this)"><div class="faq-q">Berapa lama proses pesanan?<i class="fas fa-chevron-down"></i></div><div class="faq-a">Pulsa, e-wallet, kuota: 1-5 menit. Token PLN & Game: 1-10 menit. Aplikasi Premium & Jasa CV: 10-60 menit. Di luar jam kerja (00:00-07:00) bisa lebih lama.</div></div>
+            <div class="faq-item" onclick="toggleFAQ(this)"><div class="faq-q">Bagaimana jika pesanan gagal / saldo tidak masuk?<i class="fas fa-chevron-down"></i></div><div class="faq-a">Buka menu Live Chat (ikon balon kanan atas), kirim ID order Anda. Admin akan refund 100% atau memprosesnya ulang.</div></div>
+            <div class="faq-item" onclick="toggleFAQ(this)"><div class="faq-q">Bisa pesan dalam jumlah besar / reseller?<i class="fas fa-chevron-down"></i></div><div class="faq-a">Bisa! Pilih menu "Join Reseller" di Beranda. Anda akan dapat harga reseller (lebih murah) untuk semua layanan.</div></div>
+            <div class="faq-item" onclick="toggleFAQ(this)"><div class="faq-q">Saya salah transfer (kelebihan/kurangan), gimana?<i class="fas fa-chevron-down"></i></div><div class="faq-a">Hubungi admin via Live Chat dengan kirim foto bukti transfer. Selisih akan dikembalikan / diminta tambahan, tergantung kasus.</div></div>
+            <div class="faq-item" onclick="toggleFAQ(this)"><div class="faq-q">Apakah data saya aman?<i class="fas fa-chevron-down"></i></div><div class="faq-a">Ya, data hanya disimpan di HP Anda (local storage browser). Server kami hanya menerima ID Order, target & bukti transfer untuk diproses oleh admin.</div></div>
+
+            <div class="grid grid-cols-2 gap-3 mt-6">
+                <a href="https://wa.me/6285199239420" class="flex items-center justify-center gap-2 py-3 bg-green-500 text-white rounded-2xl font-bold shadow-md active:scale-95 transition text-sm"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+                <a href="https://t.me/6161828437" class="flex items-center justify-center gap-2 py-3 bg-blue-500 text-white rounded-2xl font-bold shadow-md active:scale-95 transition text-sm"><i class="fab fa-telegram-plane"></i> Telegram</a>
+            </div>
         </div>
     </main>
 
     <nav class="fixed bottom-0 max-w-md w-full bg-white border-t flex justify-around py-3 z-50 shadow-[0_-2px_10px_rgba(0,0,0,0.03)]">
-        <div onclick="showPage('home')" id="nav-home" class="flex flex-col items-center text-brand font-bold cursor-pointer transition-all"><i class="fas fa-home text-lg"></i><span class="text-[10px]">Home</span></div>
-        <div onclick="showPage('riwayat')" id="nav-riwayat" class="flex flex-col items-center text-gray-400 cursor-pointer transition-all"><i class="fas fa-history text-lg"></i><span class="text-[10px]">Riwayat</span></div>
-        <div onclick="alert('Fitur ini sedang dalam pengembangan oleh Minma!')" id="nav-akun" class="flex flex-col items-center text-gray-400 cursor-pointer transition-all">
-    <i class="fas fa-user text-lg"></i>
-    <span class="text-[10px]">Akun</span>
-</div>
+        <div onclick="showPage('home')" id="nav-home" class="nav-item active"><i class="fas fa-home text-lg"></i><span class="text-[10px]">Home</span></div>
+        <div onclick="showPage('riwayat')" id="nav-riwayat" class="nav-item"><i class="fas fa-history text-lg"></i><span class="text-[10px]">Riwayat</span></div>
+        <div onclick="showPage('bantuan')" id="nav-bantuan" class="nav-item"><i class="fas fa-circle-question text-lg"></i><span class="text-[10px]">Bantuan</span></div>
+        <div onclick="showToast('Fitur Akun masih dalam pengembangan!','info')" id="nav-akun" class="nav-item"><i class="fas fa-user text-lg"></i><span class="text-[10px]">Akun</span></div>
     </nav>
 
     <div id="modalOrder" class="modal-overlay">
@@ -271,226 +234,526 @@
                 <button onclick="goToPayment()" class="w-full py-4 bg-brand text-white rounded-2xl font-bold mt-6 shadow-lg uppercase text-xs tracking-widest">Lanjut Pembayaran</button>
             </div>
             <div id="orderStep2" class="hidden text-center">
-                <h3 class="text-lg font-bold mb-4 italic text-brand uppercase">Scan & Bayar QRIS</h3>
+                <h3 class="text-lg font-bold mb-4 italic text-brand uppercase">Scan &amp; Bayar QRIS</h3>
                 <img src="https://raw.githubusercontent.com/rembostore10/remsdigi/main/qrisrems.png" class="w-48 mx-auto mb-4 rounded-3xl border-4 border-brand p-1">
                 <div class="p-4 bg-teal-50 rounded-2xl mb-4 shadow-inner"><p id="finalPrice" class="text-2xl font-black text-brand">Rp0</p></div>
-                <div class="mb-4 px-2">
-        <p class="text-[10px] text-red-600 font-bold italic leading-tight uppercase">
-            *Wajib transfer sesuai harga! Jika tidak sesuai, dana hangus & tidak dikembalikan.
-        </p>
-    </div>
+                <div class="mb-4 px-2"><p class="text-[10px] text-red-600 font-bold italic leading-tight uppercase">*Wajib transfer sesuai harga! Jika tidak sesuai, dana hangus &amp; tidak dikembalikan.</p></div>
                 <div class="text-left mb-4">
                     <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Upload Bukti Screenshot</label>
-                    <input type="file" id="proofImg" class="w-full text-xs mt-1 text-gray-400 file:bg-teal-50 file:text-brand file:border-none file:px-4 file:py-2 file:rounded-full">
+                    <input type="file" id="proofImg" accept="image/*" class="w-full text-xs mt-1 text-gray-400 file:bg-teal-50 file:text-brand file:border-none file:px-4 file:py-2 file:rounded-full">
                 </div>
                 <button onclick="sendOrder()" id="btnSubmit" class="w-full py-4 bg-brand text-white rounded-2xl font-bold mt-2 uppercase text-xs tracking-widest">Konfirmasi Pembayaran</button>
             </div>
             <button onclick="closeModal('modalOrder')" class="w-full mt-4 text-gray-400 text-[10px] font-bold uppercase tracking-widest">Batal</button>
         </div>
     </div>
-<div id="maintenanceMode" class="hidden fixed inset-0 bg-white z-[999] flex flex-col items-center justify-center p-8 text-center">
-    <div class="w-24 h-24 bg-teal-50 rounded-full flex items-center justify-center mb-6 animate-bounce">
-        <i class="fas fa-tools text-4xl text-brand"></i>
+
+    <div id="lightbox" class="lightbox" onclick="closeLightbox()"><i class="fas fa-times close-x"></i><img id="lightboxImg" src=""></div>
+
+    <div id="toastWrap" class="toast-wrap"></div>
+
+    <div id="maintenanceMode" class="hidden fixed inset-0 bg-white z-[999] flex flex-col items-center justify-center p-8 text-center">
+        <div class="w-24 h-24 bg-teal-50 rounded-full flex items-center justify-center mb-6 animate-bounce"><i class="fas fa-tools text-4xl text-brand"></i></div>
+        <h2 class="text-2xl font-black italic text-gray-800 uppercase mb-2">Website Perbaikan</h2>
+        <p class="text-sm text-gray-500 mb-8 leading-relaxed">Mohon maaf Rems, saat ini website sedang dalam pemeliharaan sistem agar pelayanan makin gacor.</p>
+        <div class="w-full space-y-3">
+            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Tetap mau order? Hubungi Admin:</p>
+            <a href="https://wa.me/6285199239420" class="flex items-center justify-center gap-3 w-full py-4 bg-green-500 text-white rounded-2xl font-bold shadow-lg shadow-green-100 active:scale-95 transition"><i class="fab fa-whatsapp text-xl"></i> WhatsApp Admin</a>
+            <a href="https://t.me/6161828437" class="flex items-center justify-center gap-3 w-full py-4 bg-blue-500 text-white rounded-2xl font-bold shadow-lg shadow-blue-100 active:scale-95 transition"><i class="fab fa-telegram-plane text-xl"></i> Telegram Admin</a>
+        </div>
+        <p class="mt-12 text-[9px] text-gray-300 font-bold uppercase tracking-[0.2em]">© REMSDIGI OFFICIAL</p>
     </div>
-    <h2 class="text-2xl font-black italic text-gray-800 uppercase mb-2">Website Perbaikan</h2>
-    <p class="text-sm text-gray-500 mb-8 leading-relaxed">
-        Mohon maaf Rems, saat ini website sedang dalam pemeliharaan sistem agar pelayanan makin gacor. 
-    </p>
-    
-    <div class="w-full space-y-3">
-        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Tetap mau order? Hubungi Admin:</p>
-        <a href="https://wa.me/6285199239420" class="flex items-center justify-center gap-3 w-full py-4 bg-green-500 text-white rounded-2xl font-bold shadow-lg shadow-green-100 active:scale-95 transition">
-            <i class="fab fa-whatsapp text-xl"></i> WhatsApp Admin
-        </a>
-        <a href="https://t.me/6161828437" class="flex items-center justify-center gap-3 w-full py-4 bg-blue-500 text-white rounded-2xl font-bold shadow-lg shadow-blue-100 active:scale-95 transition">
-            <i class="fab fa-telegram-plane text-xl"></i> Telegram Admin
-        </a>
-    </div>
-    <p class="mt-12 text-[9px] text-gray-300 font-bold uppercase tracking-[0.2em]">© REMSDIGI OFFICIAL</p>
-</div>
+
     <script>
+        // ============ THEME ============
         function toggleDarkMode() {
             const body = document.body;
             const icon = document.getElementById('darkIcon');
-            
             body.classList.toggle('dark-mode');
-            
-            if (body.classList.contains('dark-mode')) {
-                icon.classList.replace('fa-moon', 'fa-sun');
-                body.classList.remove('bg-white'); // Hapus warna putih Tailwind
-                localStorage.setItem('theme', 'dark');
-            } else {
-                icon.classList.replace('fa-sun', 'fa-moon');
-                body.classList.add('bg-white'); // Kembalikan warna putih Tailwind
-                localStorage.setItem('theme', 'light');
-            }
+            if (body.classList.contains('dark-mode')) { icon.classList.replace('fa-moon', 'fa-sun'); body.classList.remove('bg-white'); localStorage.setItem('theme', 'dark'); }
+            else { icon.classList.replace('fa-sun', 'fa-moon'); body.classList.add('bg-white'); localStorage.setItem('theme', 'light'); }
         }
-
-        // Cek tema saat buka halaman
         if (localStorage.getItem('theme') === 'dark') {
             document.body.classList.add('dark-mode');
             document.body.classList.remove('bg-white');
-            // Pastikan ikonnya juga berubah
-            setTimeout(() => {
-                const icon = document.getElementById('darkIcon');
-                if(icon) icon.classList.replace('fa-moon', 'fa-sun');
-            }, 100);
+            setTimeout(() => { const ic = document.getElementById('darkIcon'); if(ic) ic.classList.replace('fa-moon', 'fa-sun'); }, 100);
         }
-// --- KONFIGURASI DATABASE GITHUB Rems ---
+
+        // ============ KONFIGURASI ============
         const GITHUB_USER = "rembostore10";
-        const GITHUB_REPO = "remsdigi"; 
-        const JSON_PATH = "produk.json"; 
-        
+        const GITHUB_REPO = "remsdigi";
+        const JSON_PATH = "produk.json";
         const ORDER_BOT = "8653920922:AAGa5rFKNhwL4cyO2w8X1oAEyyLO-QuL3W8";
         const TICKET_BOT = "8674992599:AAEaOBD71XPvJIrbF5YweAkcHR_sO2IJjsI";
         const ADMIN_CHAT_ID = "6161828437";
         const STATUS_BOT_TOKEN = "8633030410:AAHsxelO0UjiHfj8bQe6Gk2q2d1QN0Hyfro";
 
-        let dbProduk = {}; 
+        // GITHUB_PAT untuk fitur admin /tambah /edit /hapusvarian /hapus.
+        // Kosongkan jika belum mau pakai. PENTING: pakai FINE-GRAINED token, scope: repository "rembostore10/remsdigi" Contents Read & Write.
+        // PERINGATAN: token ini akan tampak di JS browser - JANGAN pakai PAT classic full account.
+        const GITHUB_PAT = "";
+
+        let dbProduk = {};
         let lastOrderUpdate = parseInt(localStorage.getItem('last_o_id') || '0');
         let lastTicketUpdate = parseInt(localStorage.getItem('last_t_id') || '0');
+        let lastStatusUpdate = parseInt(localStorage.getItem('last_s_id') || '0');
         let orderData = { id: '', service: '', plan: '', price: 0, target: '' };
+        let riwFilter = 'all';
+        let typingTimer = null;
 
         if(!localStorage.getItem('rems_id')) localStorage.setItem('rems_id', '#remsdigi' + Math.floor(10000 + Math.random() * 90000));
         const USER_ID = localStorage.getItem('rems_id');
         document.getElementById('displayChatID').innerText = "ID: " + USER_ID;
 
-        // --- FUNGSI CORE ---
+        // ============ TOAST / LIGHTBOX / NOTIF ============
+        function showToast(msg, type='info', dur=3000) {
+            const w = document.getElementById('toastWrap');
+            const t = document.createElement('div');
+            t.className = `toast toast-${type}`;
+            t.innerText = msg;
+            w.appendChild(t);
+            setTimeout(() => { t.style.opacity='0'; t.style.transform='translateY(-12px)'; t.style.transition='0.25s'; setTimeout(()=>t.remove(), 260); }, dur);
+        }
+        function showLightbox(src) { document.getElementById('lightboxImg').src = src; document.getElementById('lightbox').classList.add('active'); }
+        function closeLightbox() { document.getElementById('lightbox').classList.remove('active'); }
+        function requestNotifPerm() { if (!('Notification' in window)) return; if (Notification.permission === 'default') Notification.requestPermission(); }
+        function pushNotif(title, body) {
+            try {
+                if ('Notification' in window && Notification.permission === 'granted' && document.hidden) {
+                    const n = new Notification(title, { body, icon: 'https://raw.githubusercontent.com/rembostore10/remsdigi/main/qrisrems.png' });
+                    n.onclick = () => { window.focus(); n.close(); };
+                }
+            } catch(e){}
+        }
+
+        // ============ DATABASE ============
         async function fetchProduk() {
             try {
-                const response = await fetch(`https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/${JSON_PATH}?t=${Date.now()}`);
-                dbProduk = await response.json();
-                console.log("Database Load Success");
-            } catch (e) { console.error("Database Load Failed"); }
+                const r = await fetch(`https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/${JSON_PATH}?t=${Date.now()}`);
+                dbProduk = await r.json();
+            } catch(e) { console.error("DB load fail"); }
         }
         fetchProduk();
 
         function saveToLocal(o) { let h = JSON.parse(localStorage.getItem('rems_h') || '[]'); h.unshift(o); localStorage.setItem('rems_h', JSON.stringify(h)); }
         function getHistory() { return JSON.parse(localStorage.getItem('rems_h') || '[]'); }
-        function saveChat(role, text) {
+        function saveChat(role, text, type='text', extra={}) {
             let chat = JSON.parse(localStorage.getItem('rems_c') || '[]');
-            chat.push({ role, text, time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) });
+            chat.push({ role, text, type, ...extra, time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) });
+            if (chat.length > 200) chat = chat.slice(-200);
             localStorage.setItem('rems_c', JSON.stringify(chat));
         }
 
+        // ============ TELEGRAM HELPERS ============
+        async function sendBotMsg(token, chatId, text) {
+            try {
+                await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+                    method: 'POST', headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML', disable_web_page_preview: true })
+                });
+            } catch(e) { /* ignore */ }
+        }
+        async function getTelegramFileUrl(token, fileId) {
+            try {
+                const r = await fetch(`https://api.telegram.org/bot${token}/getFile?file_id=${fileId}`);
+                const d = await r.json();
+                if (d.ok && d.result.file_path) return `https://api.telegram.org/file/bot${token}/${d.result.file_path}`;
+            } catch(e) {}
+            return null;
+        }
+
+        // ============ GITHUB WRITE (admin product commands) ============
+        async function ghGetSha(path) {
+            const r = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${path}`, {
+                headers: { 'Authorization': `token ${GITHUB_PAT}`, 'Accept': 'application/vnd.github+json' }
+            });
+            if (!r.ok) throw new Error(`GET ${path}: ${r.status}`);
+            const j = await r.json();
+            return j.sha;
+        }
+        async function ghPutJson(path, obj, msg) {
+            const sha = await ghGetSha(path);
+            const content = btoa(unescape(encodeURIComponent(JSON.stringify(obj, null, 2))));
+            const r = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${path}`, {
+                method: 'PUT',
+                headers: { 'Authorization': `token ${GITHUB_PAT}`, 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: msg, content, sha })
+            });
+            if (!r.ok) {
+                const e = await r.text();
+                throw new Error(`PUT ${path}: ${r.status} ${e.slice(0,180)}`);
+            }
+        }
+
+        // ============ STATUS TOKO (read-only poll, latest msg) ============
         async function updateShopStatus() {
             try {
                 const res = await fetch(`https://api.telegram.org/bot${STATUS_BOT_TOKEN}/getUpdates?limit=1&offset=-1`);
                 const data = await res.json();
-                if (data.result && data.result.length > 0) {
+                if (data.result && data.result.length > 0 && data.result[0].message && data.result[0].message.text) {
                     const lastMsg = data.result[0].message.text.trim().toUpperCase();
                     const sText = document.getElementById('statusText');
                     const sDot = document.getElementById('statusDot');
                     const mtMode = document.getElementById('maintenanceMode');
-                    if (lastMsg === 'PERBAIKAN') {
-                        mtMode.classList.remove('hidden');
-                        document.body.style.overflow = 'hidden';
-                        return;
-                    } else {
-                        mtMode.classList.add('hidden');
-                        document.body.style.overflow = 'auto';
-                    }
-                    if (lastMsg.includes('CLOSE')) { sText.innerText = "Closed"; sDot.className = "w-2 h-2 rounded-full bg-red-500"; }
-                    else if (lastMsg.includes('SLOW')) { sText.innerText = "Slow Respon"; sDot.className = "w-2 h-2 rounded-full bg-yellow-400 animate-pulse"; }
-                    else { sText.innerText = "Open"; sDot.className = "w-2 h-2 rounded-full bg-green-400 animate-pulse"; }
+                    if (lastMsg === 'PERBAIKAN') { mtMode.classList.remove('hidden'); document.body.style.overflow='hidden'; return; }
+                    else { mtMode.classList.add('hidden'); document.body.style.overflow='auto'; }
+                    if (lastMsg === 'CLOSE' || lastMsg === 'CLOSED') { sText.innerText = "Closed"; sDot.className = "w-2 h-2 rounded-full bg-red-500"; }
+                    else if (lastMsg === 'SLOW') { sText.innerText = "Slow Respon"; sDot.className = "w-2 h-2 rounded-full bg-yellow-400 animate-pulse"; }
+                    else if (lastMsg === 'OPEN') { sText.innerText = "Open"; sDot.className = "w-2 h-2 rounded-full bg-green-400 animate-pulse"; }
                 }
-            } catch (e) {}
+            } catch(e) {}
         }
         setInterval(updateShopStatus, 10000); updateShopStatus();
 
-        // --- FUNGSI SINNKRONISASI (SOLUSI FIX) ---
-        async function syncData() {
-    try {
-        // MENGGUNAKAN LONG POLLING: limit 1 & timeout 30 agar instan
-        // Offset +1 memastikan kita hanya mengambil pesan yang BENAR-BENAR BARU
-        const resO = await fetch(`https://api.telegram.org/bot${ORDER_BOT}/getUpdates?offset=${lastOrderUpdate + 1}&limit=1&timeout=30`);
-        const dataO = await resO.json();
-        
-        if(dataO.result && dataO.result.length > 0) {
-            let history = getHistory(); 
-            let changed = false;
-            
-            // Ambil pesan paling baru (karena limit=1)
-            const u = dataO.result[0];
-            lastOrderUpdate = u.update_id;
-            localStorage.setItem('last_o_id', lastOrderUpdate);
+        // ============ ORDER BOT HANDLER (only /ping, /send) ============
+        async function handleOrderBotUpdate(u) {
+            const m = u.message;
+            if (!m) return;
+            const chatId = m.chat.id;
+            const text = (m.text || '').trim();
 
-            // 1. CEK SIGNAL STOP
-            if (u.message && u.message.text === '/stop') {
-                fetch(`https://api.telegram.org/bot${ORDER_BOT}/sendMessage?chat_id=${u.message.chat.id}&text=🛑 SISTEM REFRESHED!`);
+            // Foto bukti (dari customer via sendPhoto): no text command, photo array → ack & abaikan
+            if (m.photo && (!text || !text.startsWith('/'))) {
+                // Ini foto bukti order dari website. Jangan reply (akan loop).
                 return;
             }
 
-            // 2. PROSES PERINTAH /SEND
-            if(u.message && u.message.text && u.message.text.includes('/send')) {
-                const txt = u.message.text.trim();
-                const lines = txt.split('\n'); 
-                
-                const idMatch = txt.match(/#rems\d+/);
-                const orderId = idMatch ? idMatch[0] : null;
-                
-                if(orderId) {
+            // /ping
+            if (text === '/ping') {
+                await sendBotMsg(ORDER_BOT, chatId, `🏓 <b>PONG!</b>\n✅ Website online &amp; menerima command.\n⏱️ ${new Date().toLocaleString('id-ID')}\n👤 Polling oleh: <code>${USER_ID}</code>`);
+                return;
+            }
+
+            // /stop (legacy - tetap supported)
+            if (text === '/stop') {
+                await sendBotMsg(ORDER_BOT, chatId, `🛑 SISTEM REFRESHED!`);
+                return;
+            }
+
+            // /send <id>\n<status>\n<pesan>
+            if (text.startsWith('/send')) {
+                const idMatch = text.match(/#rems\w+/i);
+                if (!idMatch) {
+                    await sendBotMsg(ORDER_BOT, chatId, `❌ Format salah. Gunakan:\n<code>/send #remsXXXX\nstatus\npesan</code>\n\nContoh:\n<code>/send #rems1234\nsukses\nSaldo sudah masuk yaa</code>`);
+                    return;
+                }
+                const orderId = idMatch[0];
+                // 1) ack proses
+                await sendBotMsg(ORDER_BOT, chatId, `📨 Update untuk <b>${orderId}</b> diterima website, sedang diproses...`);
+                try {
+                    const lines = text.split('\n');
                     const status = lines[1] ? lines[1].trim().toLowerCase() : 'proses';
-                    const note = lines.slice(2).join('\n').trim() || "Pesanan diperbarui.";
-                    
+                    const note = lines.slice(2).join('\n').trim() || 'Pesanan diperbarui.';
+                    let history = getHistory();
                     const idx = history.findIndex(h => h.id === orderId);
-                    
-                    if(idx !== -1) {
-                        // Update jika sudah ada di browser ini
-                        history[idx].status = status; 
-                        history[idx].adminNote = note; 
-                        changed = true;
+                    let notifData = null;
+                    if (idx !== -1) {
+                        const prev = (history[idx].status || '').toLowerCase();
+                        history[idx].status = status;
+                        history[idx].adminNote = note;
+                        if (prev !== status) notifData = { id: orderId, status, service: history[idx].service };
                     } else {
-                        // OTOMATIS MUNCUL di browser/HP lain meskipun belum ada riwayatnya
-                        history.unshift({
-                            id: orderId,
-                            service: "Update Sistem", 
-                            plan: "Cek Detail Laporan",
-                            status: status,
-                            adminNote: note
-                        });
-                        changed = true;
+                        history.unshift({ id: orderId, service: 'Update Sistem', plan: 'Cek Detail Laporan', status, adminNote: note });
+                        notifData = { id: orderId, status, service: 'Update Sistem' };
                     }
-
-                    // Bot kirim balik konfirmasi ke Admin
-                    fetch(`https://api.telegram.org/bot${ORDER_BOT}/sendMessage?chat_id=${u.message.chat.id}&text=✅ FAST UPDATE: ${orderId} BERHASIL!`);
+                    localStorage.setItem('rems_h', JSON.stringify(history));
+                    renderRiwayat();
+                    if (notifData) {
+                        const emo = notifData.status === 'sukses' ? '✅' : (notifData.status === 'gagal' ? '❌' : '🔄');
+                        pushNotif(`${emo} Order ${notifData.id} ${notifData.status.toUpperCase()}`, `${notifData.service}`);
+                        showToast(`${emo} Order ${notifData.id}: ${notifData.status.toUpperCase()}`, notifData.status === 'sukses' ? 'success' : (notifData.status === 'gagal' ? 'error' : 'info'));
+                    }
+                    // 2) ack sukses
+                    await sendBotMsg(ORDER_BOT, chatId, `✅ <b>${orderId}</b> → status <b>${status.toUpperCase()}</b> BERHASIL terkirim ke website.\n📝 Pesan: ${note.slice(0,80)}`);
+                } catch(e) {
+                    await sendBotMsg(ORDER_BOT, chatId, `❌ Gagal proses /send untuk ${orderId}: ${e.message}`);
                 }
+                return;
             }
 
-            if(changed) { 
-                localStorage.setItem('rems_h', JSON.stringify(history)); 
-                renderRiwayat(); 
+            // Perintah lain → ditolak
+            if (text.startsWith('/')) {
+                await sendBotMsg(ORDER_BOT, chatId, `❌ Perintah <code>${text.split(/\s/)[0]}</code> tidak dikenal.\n\nBot ini HANYA menerima:\n• <code>/ping</code> — cek website online\n• <code>/send #remsXXXX\nstatus\npesan</code> — update order\n\nUntuk kelola produk pakai bot status (token <code>8633...</code>).`);
             }
         }
 
-        // --- Live Chat (Ticket Bot) ---
-        const resT = await fetch(`https://api.telegram.org/bot${TICKET_BOT}/getUpdates?offset=${lastTicketUpdate + 1}&limit=5`);
-        const dataT = await resT.json();
-        if(dataT.result && dataT.result.length > 0) {
-            dataT.result.forEach(u => {
-                lastTicketUpdate = u.update_id;
-                localStorage.setItem('last_t_id', lastTicketUpdate);
-                if(u.message && u.message.text && u.message.text.startsWith('/')) {
-                    const tid = u.message.text.split(' ')[0].substring(1);
-                    const msg = u.message.text.split(' ').slice(1).join(' ');
-                    if(tid === USER_ID) addChatMessage('bot', msg, true);
-                }
-            });
-        }
-    } catch(e) { 
-        // Jika error/timeout, sync tetap jalan
-        console.log("Sync Standby..."); 
-    }
-}
-        setInterval(syncData, 1000);
+        // ============ TICKET BOT HANDLER (livechat) ============
+        async function handleTicketBotUpdate(u) {
+            const m = u.message;
+            if (!m) return;
+            const chatId = m.chat.id;
 
-        // --- FUNGSI UI & INTERAKSI ---
+            // Foto reply admin: caption /<USER_ID> [text]
+            if (m.photo && m.caption && m.caption.startsWith('/')) {
+                const parts = m.caption.split(/\s+/);
+                const tid = parts[0].substring(1);
+                const text = parts.slice(1).join(' ');
+                if (tid === USER_ID) {
+                    await sendBotMsg(TICKET_BOT, chatId, `📨 Foto untuk <code>${USER_ID}</code> diterima website, sedang diproses...`);
+                    try {
+                        const fileId = m.photo[m.photo.length - 1].file_id;
+                        const fileUrl = await getTelegramFileUrl(TICKET_BOT, fileId);
+                        if (!fileUrl) throw new Error('gagal resolve URL foto');
+                        addChatPhoto('bot', fileUrl, text || '', true);
+                        await sendBotMsg(TICKET_BOT, chatId, `✅ Foto berhasil ditampilkan ke pelanggan <code>${USER_ID}</code>.`);
+                    } catch(e) {
+                        await sendBotMsg(TICKET_BOT, chatId, `❌ Gagal kirim foto ke ${USER_ID}: ${e.message}`);
+                    }
+                }
+                return;
+            }
+
+            const text = (m.text || '').trim();
+            if (!text) return;
+
+            // Text command
+            if (text.startsWith('/')) {
+                const parts = text.split(/\s+/);
+                const tid = parts[0].substring(1);
+                const rest = parts.slice(1).join(' ').trim();
+
+                // /typing #USER_ID
+                if (tid === 'typing') {
+                    if (rest === USER_ID) showTyping();
+                    return; // tidak ack (transient)
+                }
+                // /<USER_ID> [text]
+                if (tid === USER_ID) {
+                    await sendBotMsg(TICKET_BOT, chatId, `📨 Pesan untuk <code>${USER_ID}</code> diterima website, sedang diproses...`);
+                    try {
+                        if (!rest) throw new Error('isi pesan kosong');
+                        addChatMessage('bot', rest, true);
+                        await sendBotMsg(TICKET_BOT, chatId, `✅ Pesan ke <code>${USER_ID}</code> berhasil tampil di chat pelanggan.`);
+                    } catch(e) {
+                        await sendBotMsg(TICKET_BOT, chatId, `❌ Gagal kirim pesan ke ${USER_ID}: ${e.message}`);
+                    }
+                    return;
+                }
+                // command lain → kasih hint
+                if (tid !== USER_ID && tid.startsWith('rems') === false && tid !== '#remsdigi' + tid.replace(/\D/g,'')) {
+                    // jangan ack utk USER_ID lain (browser ini bukan target)
+                }
+            }
+        }
+
+        // ============ STATUS BOT HANDLER (status keywords + admin produk) ============
+        async function handleStatusBotUpdate(u) {
+            const m = u.message;
+            if (!m || !m.text) return;
+            const chatId = m.chat.id;
+            const text = m.text.trim();
+            const upper = text.toUpperCase();
+
+            // Status keyword (silent — sudah dihandle updateShopStatus). Beri ack singkat saja.
+            if (['OPEN','CLOSE','CLOSED','SLOW','PERBAIKAN'].includes(upper)) {
+                await sendBotMsg(STATUS_BOT_TOKEN, chatId, `✅ Status toko diubah jadi <b>${upper}</b> &amp; sudah terkirim ke website.`);
+                return;
+            }
+
+            // /whoami
+            if (text === '/whoami') {
+                await sendBotMsg(STATUS_BOT_TOKEN, chatId, `🆔 <b>Identitas Telegram Anda</b>\nChat ID: <code>${chatId}</code>\nNama: ${escapeHtml(m.from?.first_name || '-')} ${escapeHtml(m.from?.last_name || '')}\nUsername: @${escapeHtml(m.from?.username || '-')}\n\n👤 Polling browser: <code>${USER_ID}</code>`);
+                return;
+            }
+
+            // /list
+            if (text === '/list') {
+                await sendBotMsg(STATUS_BOT_TOKEN, chatId, `📨 Daftar produk diminta, sedang ambil dari website...`);
+                try {
+                    await fetchProduk();
+                    let totalK = 0, totalL = 0, totalV = 0;
+                    let out = '📦 <b>DAFTAR PRODUK REMSDIGI</b>\n\n';
+                    for (const k of Object.keys(dbProduk)) {
+                        totalK++;
+                        out += `═══ <b>${escapeHtml(k)}</b> ═══\n`;
+                        const lay = dbProduk[k] || {};
+                        for (const l of Object.keys(lay)) {
+                            totalL++;
+                            out += `▸ <b>${escapeHtml(l)}</b>\n`;
+                            (lay[l] || []).forEach(v => {
+                                totalV++;
+                                out += `   • ${escapeHtml(v.n)} = Rp${(v.p||0).toLocaleString('id-ID')}\n`;
+                            });
+                        }
+                        out += '\n';
+                    }
+                    // chunked send (limit ~3800 utk safety)
+                    const parts = [];
+                    let buf = '';
+                    for (const line of out.split('\n')) {
+                        if ((buf + line + '\n').length > 3800) { parts.push(buf); buf = ''; }
+                        buf += line + '\n';
+                    }
+                    if (buf) parts.push(buf);
+                    for (const p of parts) await sendBotMsg(STATUS_BOT_TOKEN, chatId, p);
+                    await sendBotMsg(STATUS_BOT_TOKEN, chatId, `✅ Selesai. Total: <b>${totalK}</b> kategori, <b>${totalL}</b> layanan, <b>${totalV}</b> varian.`);
+                } catch(e) {
+                    await sendBotMsg(STATUS_BOT_TOKEN, chatId, `❌ Gagal ambil produk: ${e.message}`);
+                }
+                return;
+            }
+
+            // /tambah Kategori\nLayanan | Varian | Harga
+            if (text.startsWith('/tambah')) {
+                await sendBotMsg(STATUS_BOT_TOKEN, chatId, `📨 Perintah TAMBAH diterima, sedang memproses ke website...`);
+                if (!GITHUB_PAT) { await sendBotMsg(STATUS_BOT_TOKEN, chatId, `❌ <b>GITHUB_PAT belum diset</b> di kode index.html.\nBuat fine-grained token di github.com/settings/personal-access-tokens (scope: rembostore10/remsdigi, Contents Read &amp; Write), lalu paste ke baris <code>const GITHUB_PAT = "..."</code> di file index.html dan commit ulang.`); return; }
+                try {
+                    const lines = text.split('\n');
+                    const kat = lines[0].substring('/tambah'.length).trim();
+                    if (!kat) throw new Error('Kategori kosong. Format:\n/tambah Kategori\nLayanan | Varian | Harga');
+                    const items = lines.slice(1).map(l => l.split('|').map(s=>s.trim())).filter(p => p.length === 3 && p[0] && p[1] && p[2]);
+                    if (items.length === 0) throw new Error('Tidak ada baris valid. Tiap baris: Layanan | Varian | Harga');
+                    await fetchProduk();
+                    const updated = JSON.parse(JSON.stringify(dbProduk));
+                    if (!updated[kat]) updated[kat] = {};
+                    let added = 0;
+                    for (const [lay, vrn, hrg] of items) {
+                        const hi = parseInt((hrg||'').replace(/[^\d]/g,''));
+                        if (isNaN(hi)) continue;
+                        if (!updated[kat][lay]) updated[kat][lay] = [];
+                        updated[kat][lay].push({ n: vrn, p: hi });
+                        added++;
+                    }
+                    if (added === 0) throw new Error('Tidak ada item valid (cek harga harus angka)');
+                    await ghPutJson(JSON_PATH, updated, `Tambah ${added} produk ke ${kat} via Telegram`);
+                    dbProduk = updated;
+                    await sendBotMsg(STATUS_BOT_TOKEN, chatId, `✅ <b>${added} produk</b> berhasil ditambahkan ke kategori <b>${escapeHtml(kat)}</b>.\n🌐 Vercel akan deploy otomatis ~30 detik.`);
+                } catch(e) {
+                    await sendBotMsg(STATUS_BOT_TOKEN, chatId, `❌ Gagal tambah: ${e.message}`);
+                }
+                return;
+            }
+
+            // /edit Kategori | Layanan | Varian | HargaBaru
+            if (text.startsWith('/edit ') || text.startsWith('/edit\n')) {
+                await sendBotMsg(STATUS_BOT_TOKEN, chatId, `📨 Perintah EDIT diterima, sedang update harga...`);
+                if (!GITHUB_PAT) { await sendBotMsg(STATUS_BOT_TOKEN, chatId, `❌ GITHUB_PAT belum diset di kode.`); return; }
+                try {
+                    const body = text.substring('/edit'.length).trim();
+                    const parts = body.split('|').map(s=>s.trim());
+                    if (parts.length !== 4) throw new Error('Format: /edit Kategori | Layanan | Varian | HargaBaru');
+                    const [kat, lay, vrn, hrg] = parts;
+                    const hi = parseInt(hrg.replace(/[^\d]/g,''));
+                    if (isNaN(hi)) throw new Error('Harga baru tidak valid');
+                    await fetchProduk();
+                    const updated = JSON.parse(JSON.stringify(dbProduk));
+                    if (!updated[kat] || !updated[kat][lay]) throw new Error(`"${kat} > ${lay}" tidak ditemukan`);
+                    const arr = updated[kat][lay];
+                    const idx = arr.findIndex(v => v.n === vrn);
+                    if (idx === -1) throw new Error(`Varian "${vrn}" tidak ditemukan di ${lay}`);
+                    const oldP = arr[idx].p;
+                    arr[idx].p = hi;
+                    await ghPutJson(JSON_PATH, updated, `Edit harga ${kat}/${lay}/${vrn}: ${oldP} → ${hi} via Telegram`);
+                    dbProduk = updated;
+                    await sendBotMsg(STATUS_BOT_TOKEN, chatId, `✅ Harga <b>${escapeHtml(vrn)}</b> di ${escapeHtml(lay)} berhasil diubah:\nRp${oldP.toLocaleString('id-ID')} → <b>Rp${hi.toLocaleString('id-ID')}</b>`);
+                } catch(e) {
+                    await sendBotMsg(STATUS_BOT_TOKEN, chatId, `❌ Gagal edit: ${e.message}`);
+                }
+                return;
+            }
+
+            // /hapusvarian Kategori | Layanan | Varian
+            if (text.startsWith('/hapusvarian')) {
+                await sendBotMsg(STATUS_BOT_TOKEN, chatId, `📨 HAPUS VARIAN diterima, sedang memproses...`);
+                if (!GITHUB_PAT) { await sendBotMsg(STATUS_BOT_TOKEN, chatId, `❌ GITHUB_PAT belum diset di kode.`); return; }
+                try {
+                    const body = text.substring('/hapusvarian'.length).trim();
+                    const parts = body.split('|').map(s=>s.trim());
+                    if (parts.length !== 3) throw new Error('Format: /hapusvarian Kategori | Layanan | Varian');
+                    const [kat, lay, vrn] = parts;
+                    await fetchProduk();
+                    const updated = JSON.parse(JSON.stringify(dbProduk));
+                    if (!updated[kat] || !updated[kat][lay]) throw new Error(`"${kat} > ${lay}" tidak ditemukan`);
+                    const before = updated[kat][lay].length;
+                    updated[kat][lay] = updated[kat][lay].filter(v => v.n !== vrn);
+                    if (updated[kat][lay].length === before) throw new Error(`Varian "${vrn}" tidak ada`);
+                    await ghPutJson(JSON_PATH, updated, `Hapus varian ${kat}/${lay}/${vrn} via Telegram`);
+                    dbProduk = updated;
+                    await sendBotMsg(STATUS_BOT_TOKEN, chatId, `✅ Varian <b>${escapeHtml(vrn)}</b> berhasil dihapus dari ${escapeHtml(kat)} > ${escapeHtml(lay)}.`);
+                } catch(e) {
+                    await sendBotMsg(STATUS_BOT_TOKEN, chatId, `❌ Gagal hapus varian: ${e.message}`);
+                }
+                return;
+            }
+
+            // /hapus Kategori | Layanan (HARUS setelah /hapusvarian)
+            if (text.startsWith('/hapus')) {
+                await sendBotMsg(STATUS_BOT_TOKEN, chatId, `📨 HAPUS LAYANAN diterima, sedang memproses...`);
+                if (!GITHUB_PAT) { await sendBotMsg(STATUS_BOT_TOKEN, chatId, `❌ GITHUB_PAT belum diset di kode.`); return; }
+                try {
+                    const body = text.substring('/hapus'.length).trim();
+                    const parts = body.split('|').map(s=>s.trim());
+                    if (parts.length !== 2) throw new Error('Format: /hapus Kategori | Layanan');
+                    const [kat, lay] = parts;
+                    await fetchProduk();
+                    const updated = JSON.parse(JSON.stringify(dbProduk));
+                    if (!updated[kat] || !updated[kat][lay]) throw new Error(`"${kat} > ${lay}" tidak ditemukan`);
+                    delete updated[kat][lay];
+                    if (Object.keys(updated[kat]).length === 0) delete updated[kat];
+                    await ghPutJson(JSON_PATH, updated, `Hapus layanan ${kat}/${lay} via Telegram`);
+                    dbProduk = updated;
+                    await sendBotMsg(STATUS_BOT_TOKEN, chatId, `✅ Layanan <b>${escapeHtml(lay)}</b> di kategori <b>${escapeHtml(kat)}</b> berhasil dihapus.`);
+                } catch(e) {
+                    await sendBotMsg(STATUS_BOT_TOKEN, chatId, `❌ Gagal hapus: ${e.message}`);
+                }
+                return;
+            }
+
+            // Unknown command
+            if (text.startsWith('/')) {
+                await sendBotMsg(STATUS_BOT_TOKEN, chatId, `❌ Perintah <code>${escapeHtml(text.split(/\s/)[0])}</code> tidak dikenal.\n\n<b>Daftar Perintah Bot Status:</b>\n• <code>/whoami</code> — cek chat ID\n• <code>/list</code> — list semua produk\n• <code>/tambah Kategori\nLayanan | Varian | Harga</code>\n• <code>/edit Kat | Lay | Var | HargaBaru</code>\n• <code>/hapusvarian Kat | Lay | Var</code>\n• <code>/hapus Kat | Lay</code>\n\n<b>Atau kirim:</b> OPEN / SLOW / CLOSE / PERBAIKAN — ubah status toko.`);
+            }
+        }
+
+        // ============ MAIN SYNC LOOP ============
+        async function syncData() {
+            try {
+                // ORDER BOT
+                const resO = await fetch(`https://api.telegram.org/bot${ORDER_BOT}/getUpdates?offset=${lastOrderUpdate + 1}&limit=5&timeout=25`);
+                const dataO = await resO.json();
+                if (dataO.result && dataO.result.length > 0) {
+                    for (const u of dataO.result) {
+                        lastOrderUpdate = u.update_id;
+                        localStorage.setItem('last_o_id', lastOrderUpdate);
+                        await handleOrderBotUpdate(u);
+                    }
+                }
+            } catch(e) {}
+            try {
+                // TICKET BOT
+                const resT = await fetch(`https://api.telegram.org/bot${TICKET_BOT}/getUpdates?offset=${lastTicketUpdate + 1}&limit=10`);
+                const dataT = await resT.json();
+                if (dataT.result && dataT.result.length > 0) {
+                    for (const u of dataT.result) {
+                        lastTicketUpdate = u.update_id;
+                        localStorage.setItem('last_t_id', lastTicketUpdate);
+                        await handleTicketBotUpdate(u);
+                    }
+                }
+            } catch(e) {}
+            try {
+                // STATUS BOT (commands)
+                const resS = await fetch(`https://api.telegram.org/bot${STATUS_BOT_TOKEN}/getUpdates?offset=${lastStatusUpdate + 1}&limit=5`);
+                const dataS = await resS.json();
+                if (dataS.result && dataS.result.length > 0) {
+                    for (const u of dataS.result) {
+                        lastStatusUpdate = u.update_id;
+                        localStorage.setItem('last_s_id', lastStatusUpdate);
+                        await handleStatusBotUpdate(u);
+                    }
+                }
+            } catch(e) {}
+        }
+        setInterval(syncData, 1500);
+
+        // ============ PRODUCTS / FORM ============
         function openProduct(type) {
             orderData.service = type;
             const c = document.getElementById('formContainer');
             document.getElementById('modalOrder').classList.add('active');
             document.getElementById('orderStep1').classList.remove('hidden');
             document.getElementById('orderStep2').classList.add('hidden');
+            document.getElementById('modalTitle').innerText = 'Pesan ' + type;
             const list = dbProduk[type];
             if (list && Object.keys(list).length > 0) {
                 c.innerHTML = `<select id="selApp" onchange="updVar('${type}')" class="input-styled font-bold text-brand">
@@ -502,43 +765,63 @@
             }
         }
 
+        function placeholderFor(type) {
+            if (type === "Aplikasi Premium") return "Email Aktif";
+            if (type === "Token PLN") return "Nomor Meter PLN (11-12 digit)";
+            if (type === "Game") return "ID Game (contoh: 123456789(1234))";
+            if (["Pulsa","Sms","e-Wallet","Axis","Byu","Telkomsel","Xl","Smartfren"].includes(type)) return "Nomor HP Aktif (08xx)";
+            return "ID / Nomor Tujuan";
+        }
+        function inputTypeFor(type) {
+            if (type === "Aplikasi Premium") return "email";
+            if (["Token PLN","Pulsa","Sms","e-Wallet","Axis","Byu","Telkomsel","Xl","Smartfren"].includes(type)) return "tel";
+            return "text";
+        }
+
         function updVar(type) {
             const app = document.getElementById('selApp').value;
             const vb = document.getElementById('varBox'); const ib = document.getElementById('inputBox');
             if(!app) { vb.innerHTML = ''; ib.classList.add('hidden'); return; }
             if(type === "Panel") {
-        vb.innerHTML = `
-            <select id="selVar" class="input-styled mt-2 font-bold text-brand">
-                <option value="">-- Pilih Jenis Panel --</option>
-                ${dbProduk[type][app].map(v => `<option value="${v.p}">${v.n} - Rp${v.p.toLocaleString()}</option>`).join('')}
-            </select>
-            <div class="mt-3">
-                <label class="text-[10px] font-bold text-gray-400 uppercase ml-1">Nama Panel</label>
-                <input id="uT" placeholder="Contoh: RemsPanel / RemsStore" class="input-styled mt-1">
-            </div>
-            <div class="p-3 bg-indigo-50 border border-indigo-100 rounded-xl mt-3 text-center">
-                <p class="text-[10px] text-indigo-600 italic">Data login akan dikirim via menu Riwayat setelah dikonfirmasi.</p>
-            </div>
-        `;
-        ib.classList.add('hidden'); // Sembunyikan input default karena sudah buat di atas
-    }
-           else if(type === "Jasa CV") {
+                vb.innerHTML = `
+                    <select id="selVar" class="input-styled mt-2 font-bold text-brand">
+                        <option value="">-- Pilih Jenis Panel --</option>
+                        ${dbProduk[type][app].map(v => `<option value="${v.p}">${v.n} - Rp${v.p.toLocaleString('id-ID')}</option>`).join('')}
+                    </select>
+                    <div class="mt-3">
+                        <label class="text-[10px] font-bold text-gray-400 uppercase ml-1">Nama Panel</label>
+                        <input id="uT" placeholder="Contoh: RemsPanel / RemsStore" class="input-styled mt-1">
+                        <p class="err-msg" id="err-uT"></p>
+                    </div>
+                    <div class="p-3 bg-indigo-50 border border-indigo-100 rounded-xl mt-3 text-center">
+                        <p class="text-[10px] text-indigo-600 italic">Data login akan dikirim via menu Riwayat setelah dikonfirmasi.</p>
+                    </div>`;
+                ib.classList.add('hidden');
+            } else if(type === "Jasa CV") {
                 const templates = dbProduk[type][app];
                 vb.innerHTML = `<div class="flex overflow-x-auto gap-4 py-2 snap-x">${templates.map((v, i) => `
                     <div onclick="selectCV(${i}, ${v.p}, '${v.n}')" class="snap-center min-w-[150px] bg-white border-2 border-transparent rounded-xl p-2 cursor-pointer transition-all" id="cvCard-${i}">
-                        <img src="${v.img}" class="w-full h-40 object-cover rounded-lg mb-2 shadow-sm">
+                        <img src="${v.img}" class="w-full h-40 object-cover rounded-lg mb-2 shadow-sm" onclick="event.stopPropagation(); showLightbox('${v.img}')">
                         <p class="text-[10px] font-bold text-gray-700 text-center">${v.n}</p>
-                        <p class="text-[11px] font-black text-brand text-center">Rp${v.p.toLocaleString()}</p>
+                        <p class="text-[11px] font-black text-brand text-center">Rp${v.p.toLocaleString('id-ID')}</p>
                     </div>`).join('')}</div><input type="hidden" id="selCVPrice" value="0"><input type="hidden" id="selCVName" value="">`;
-                ib.innerHTML = `<div class="space-y-3 mt-4"><input id="cvNama" placeholder="Nama Lengkap" class="input-styled"><input id="cvTTL" placeholder="TTL" class="input-styled"><input id="cvAlamat" placeholder="Alamat" class="input-styled"><textarea id="cvEdu" placeholder="Pendidikan" class="input-styled h-20"></textarea><textarea id="cvExp" placeholder="Pengalaman" class="input-styled h-20"></textarea><input id="cvSkill" placeholder="Keahlian" class="input-styled"></div>`;
+                ib.innerHTML = `<div class="space-y-3 mt-4">
+                    <input id="cvNama" placeholder="Nama Lengkap" class="input-styled"><p class="err-msg" id="err-cvNama"></p>
+                    <input id="cvTTL" placeholder="TTL (contoh: Padang, 12 Maret 2002)" class="input-styled">
+                    <input id="cvAlamat" placeholder="Alamat" class="input-styled">
+                    <textarea id="cvEdu" placeholder="Pendidikan (contoh: SMK N 2 Padang - Akuntansi - 2018-2021)" class="input-styled h-20"></textarea>
+                    <textarea id="cvExp" placeholder="Pengalaman (jelaskan singkat tugas Anda)" class="input-styled h-20"></textarea>
+                    <input id="cvSkill" placeholder="Keahlian (contoh: MS Office, Public Speaking)" class="input-styled"><p class="err-msg" id="err-cvSkill"></p>
+                </div>`;
             } else if(type === "Suntik Sosmed") {
                 const listLayanan = dbProduk[type][app];
                 vb.innerHTML = `<select id="sCat" onchange="updPriceSos()" class="input-styled mt-2 font-bold text-brand"><option value="">-- Pilih Layanan --</option>${listLayanan.map(v => `<option value="${v.p}">${v.n}</option>`).join('')}</select><input type="number" id="sQty" placeholder="Jumlah (Min 10)" oninput="updPriceSos()" class="input-styled mt-2"><div class="p-4 bg-teal-50 rounded-xl text-center border-2 border-dashed border-teal-200 mt-2"><p id="sosPrice" class="text-brand font-black text-lg uppercase tracking-widest">Total: Rp0</p></div>`;
-                ib.innerHTML = `<input id="uT" placeholder="Link/Username" class="input-styled mt-2">`;
+                ib.innerHTML = `<input id="uT" placeholder="Link/Username target" class="input-styled mt-2"><p class="err-msg" id="err-uT"></p>`;
             } else {
-                vb.innerHTML = `<select id="selVar" class="input-styled mt-2 font-bold text-brand"><option value="">-- Pilih Varian --</option>${dbProduk[type][app].map(v => `<option value="${v.p}">${v.n} - Rp${v.p.toLocaleString()}</option>`).join('')}</select>`;
-                let ph = (type === "Aplikasi Premium") ? "Email Aktif" : "ID / Nomor Tujuan";
-                ib.innerHTML = `<input id="uT" placeholder="${ph}" class="input-styled mt-2">`;
+                vb.innerHTML = `<select id="selVar" class="input-styled mt-2 font-bold text-brand"><option value="">-- Pilih Varian --</option>${dbProduk[type][app].map(v => `<option value="${v.p}">${v.n} - Rp${v.p.toLocaleString('id-ID')}</option>`).join('')}</select>`;
+                const ph = placeholderFor(type);
+                const ipt = inputTypeFor(type);
+                ib.innerHTML = `<input type="${ipt}" id="uT" placeholder="${ph}" class="input-styled mt-2"><p class="err-msg" id="err-uT"></p>`;
             }
             ib.classList.remove('hidden');
         }
@@ -546,137 +829,344 @@
         function selectCV(index, price, name) {
             document.querySelectorAll('[id^="cvCard-"]').forEach(el => el.classList.remove('border-brand', 'bg-teal-50'));
             document.getElementById(`cvCard-${index}`).classList.add('border-brand', 'bg-teal-50');
-            document.getElementById('selCVPrice').value = price; document.getElementById('selCVName').value = name;
+            document.getElementById('selCVPrice').value = price;
+            document.getElementById('selCVName').value = name;
         }
 
         function updPriceSos() {
-            const p = parseFloat(document.getElementById('sCat').value); const q = parseInt(document.getElementById('sQty').value) || 0;
-            if (!isNaN(p) && q > 0) document.getElementById('sosPrice').innerText = "Total: Rp" + Math.ceil((p / 1000) * q).toLocaleString();
+            const p = parseFloat(document.getElementById('sCat').value);
+            const q = parseInt(document.getElementById('sQty').value) || 0;
+            if (!isNaN(p) && q > 0) document.getElementById('sosPrice').innerText = "Total: Rp" + Math.ceil((p / 1000) * q).toLocaleString('id-ID');
+        }
+
+        // ============ VALIDASI ============
+        function setErr(id, msg) {
+            const inp = document.getElementById(id); if(!inp) return;
+            const err = document.getElementById('err-' + id);
+            if (msg) { inp.classList.add('input-error'); if(err){ err.innerText = msg; err.classList.add('show'); } }
+            else { inp.classList.remove('input-error'); if(err) err.classList.remove('show'); }
+        }
+        function validateTarget(type, val) {
+            if (!val || !val.trim()) return "Wajib diisi!";
+            const v = val.trim();
+            if (type === "Aplikasi Premium") {
+                if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return "Format email tidak valid";
+            } else if (type === "Token PLN") {
+                if (!/^\d{11,12}$/.test(v)) return "Nomor meter PLN harus 11-12 digit angka";
+            } else if (type === "Game") {
+                if (!/^[\d\s()]+$/.test(v) || v.length < 4) return "ID Game hanya angka & kurung";
+            } else if (["Pulsa","Sms","e-Wallet","Axis","Byu","Telkomsel","Xl","Smartfren"].includes(type)) {
+                const num = v.replace(/\D/g, '');
+                if (!/^08\d{8,12}$/.test(num)) return "Nomor HP harus diawali 08 (10-14 digit)";
+            }
+            return null;
         }
 
         function goToPayment() {
-orderData.id = "#rems" + Math.floor(1000 + Math.random() * 9000);
+            orderData.id = "#rems" + Math.floor(1000 + Math.random() * 9000);
             if(orderData.service === "Jasa CV") {
-                const p = parseInt(document.getElementById('selCVPrice').value); 
-                const n = document.getElementById('cvNama').value;
-                const ttl = document.getElementById('cvTTL').value;
-                const almt = document.getElementById('cvAlamat').value;
-                const edu = document.getElementById('cvEdu').value;
-                const exp = document.getElementById('cvExp').value;
-                const skill = document.getElementById('cvSkill').value;
-
-                if(p === 0 || !n || !skill) return alert("Lengkapi data Nama & Kemampuan!");
-                
-                orderData.price = p; 
+                const p = parseInt(document.getElementById('selCVPrice').value);
+                const n = document.getElementById('cvNama').value.trim();
+                const ttl = document.getElementById('cvTTL').value.trim();
+                const almt = document.getElementById('cvAlamat').value.trim();
+                const edu = document.getElementById('cvEdu').value.trim();
+                const exp = document.getElementById('cvExp').value.trim();
+                const skill = document.getElementById('cvSkill').value.trim();
+                let bad = false;
+                if (p === 0) { showToast('Pilih dulu template CV!','error'); return; }
+                if (!n) { setErr('cvNama','Nama wajib diisi!'); bad = true; } else setErr('cvNama',null);
+                if (!skill) { setErr('cvSkill','Keahlian wajib diisi!'); bad = true; } else setErr('cvSkill',null);
+                if (bad) return;
+                orderData.price = p;
                 orderData.plan = "CV: " + document.getElementById('selCVName').value;
-                // Gabungkan semua data jadi satu teks panjang
-                orderData.target = `NAMA: ${n}\nTTL: ${ttl}\nALAMAT: ${almt}\nEDU: ${edu}\nEXP: ${exp}\nSKILL: ${skill}`; 
+                orderData.target = `NAMA: ${n}\nTTL: ${ttl}\nALAMAT: ${almt}\nEDU: ${edu}\nEXP: ${exp}\nSKILL: ${skill}`;
             } else {
-                const t = document.getElementById('uT')?.value; if(!t) return alert("Isi tujuan!");
-                orderData.target = t;
+                const tInp = document.getElementById('uT');
+                const t = tInp ? tInp.value : '';
+                const err = validateTarget(orderData.service, t);
+                if (err) { setErr('uT', err); return; }
+                setErr('uT', null);
+                orderData.target = t.trim();
                 if(orderData.service === "Suntik Sosmed") {
-                    const p = parseFloat(document.getElementById('sCat').value); const q = parseInt(document.getElementById('sQty').value);
-                    if(q < 10) return alert("Min 10!");
-                    orderData.price = Math.ceil((p / 1000) * q); orderData.plan = document.getElementById('selApp').value + " " + q;
+                    const p = parseFloat(document.getElementById('sCat').value);
+                    const q = parseInt(document.getElementById('sQty').value);
+                    if (isNaN(p)) return showToast('Pilih layanan dulu!','error');
+                    if (!q || q < 10) return showToast('Jumlah minimal 10!','error');
+                    orderData.price = Math.ceil((p / 1000) * q);
+                    orderData.plan = document.getElementById('selApp').value + " " + q;
+                } else if (orderData.service === "Panel") {
+                    const v = document.getElementById('selVar');
+                    if (!v.value) return showToast('Pilih jenis panel!','error');
+                    orderData.price = parseInt(v.value);
+                    orderData.plan = document.getElementById('selApp').value + " - " + v.options[v.selectedIndex].text.split(' -')[0];
                 } else {
-                    const v = document.getElementById('selVar'); if(!v.value) return alert("Pilih varian!");
-                    orderData.price = parseInt(v.value); orderData.plan = document.getElementById('selApp').value + " - " + v.options[v.selectedIndex].text.split(' -')[0];
+                    const v = document.getElementById('selVar');
+                    if (!v.value) return showToast('Pilih varian dulu!','error');
+                    orderData.price = parseInt(v.value);
+                    orderData.plan = document.getElementById('selApp').value + " - " + v.options[v.selectedIndex].text.split(' -')[0];
                 }
             }
-            document.getElementById('finalPrice').innerText = "Rp" + orderData.price.toLocaleString();
-            document.getElementById('orderStep1').classList.add('hidden'); document.getElementById('orderStep2').classList.remove('hidden');
+            document.getElementById('finalPrice').innerText = "Rp" + orderData.price.toLocaleString('id-ID');
+            document.getElementById('orderStep1').classList.add('hidden');
+            document.getElementById('orderStep2').classList.remove('hidden');
         }
 
         async function sendOrder() {
-            const f = document.getElementById('proofImg').files[0]; if(!f) return alert("Upload bukti!");
-            const btn = document.getElementById('btnSubmit'); btn.disabled = true; btn.innerText = "Mengirim...";
-            const cap = encodeURIComponent(`🆕 ORDER BARU (${orderData.id})\nLayanan: ${orderData.service}\nPaket: ${orderData.plan}\nTarget: ${orderData.target}\n\nBalas Rems: /send ${orderData.id}\nsukses\nisi_pesan`);
-            const fd = new FormData(); fd.append('photo', f);
-            await fetch(`https://api.telegram.org/bot${ORDER_BOT}/sendPhoto?chat_id=${ADMIN_CHAT_ID}&caption=${cap}`, { method: "POST", body: fd });
-saveToLocal({ 
-    id: orderData.id, 
-    service: orderData.service, 
-    plan: orderData.plan, // Pastikan ini ada
-    status: 'proses', 
-    adminNote: '' 
-});
-            alert("Berhasil!"); location.reload();
+            const f = document.getElementById('proofImg').files[0];
+            if(!f) return showToast('Upload bukti dulu!','error');
+            const btn = document.getElementById('btnSubmit');
+            btn.disabled = true; btn.innerText = "Mengirim...";
+            try {
+                const cap = encodeURIComponent(`🆕 ORDER BARU (${orderData.id})\nLayanan: ${orderData.service}\nPaket: ${orderData.plan}\nTarget: ${orderData.target}\nUserID: ${USER_ID}\n\nBalas Rems: /send ${orderData.id}\nsukses\nisi_pesan`);
+                const fd = new FormData(); fd.append('photo', f);
+                await fetch(`https://api.telegram.org/bot${ORDER_BOT}/sendPhoto?chat_id=${ADMIN_CHAT_ID}&caption=${cap}`, { method: "POST", body: fd });
+                saveToLocal({ id: orderData.id, service: orderData.service, plan: orderData.plan, target: orderData.target, status: 'proses', adminNote: '', ts: Date.now() });
+                showToast('Pesanan berhasil dikirim! Cek menu Riwayat.','success');
+                setTimeout(() => location.reload(), 1200);
+            } catch(e) {
+                showToast('Gagal kirim. Cek koneksi!','error');
+                btn.disabled = false; btn.innerText = "Konfirmasi Pembayaran";
+            }
+        }
+
+        // ============ RIWAYAT ============
+        function setRiwFilter(f) {
+            riwFilter = f;
+            document.querySelectorAll('#riwFilters button').forEach(b => b.classList.toggle('active', b.dataset.f === f));
+            renderRiwayat();
         }
 
         function renderRiwayat() {
-    const list = document.getElementById('riwayatList'); 
-    const h = getHistory();
-    
-    if(h.length === 0) { 
-        list.innerHTML = `<div class="text-center py-20"><i class="fas fa-history text-gray-300 text-4xl mb-3"></i><p class="text-gray-400 text-sm">Belum ada riwayat pesanan.</p></div>`; 
-        return; 
-    }
-    
-    list.innerHTML = h.map((t, i) => {
-        let colorClass = "bg-yellow-100 text-yellow-600"; 
-        let icon = "fa-clock";
-        const s = t.status ? t.status.toLowerCase() : 'proses';
-        
-        if(s === 'sukses') { colorClass = "bg-green-100 text-green-600"; icon = "fa-check-circle"; }
-        else if(s === 'gagal') { colorClass = "bg-red-100 text-red-600"; icon = "fa-times-circle"; }
-        else if(s.includes('fund')) { colorClass = "bg-blue-100 text-blue-600"; icon = "fa-rotate-left"; }
-        
-        return `
-        <div class="order-item shadow-sm border mb-4 p-4 rounded-2xl cursor-pointer" onclick="document.getElementById('dt-${i}').classList.toggle('active')">
-            <div class="flex justify-between items-start">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full flex items-center justify-center ${colorClass.replace('text', 'bg').replace('100', '50')}">
-                        <i class="fas ${icon} text-lg"></i>
+            const list = document.getElementById('riwayatList');
+            const h = getHistory();
+            const q = (document.getElementById('riwSearch')?.value || '').toLowerCase().trim();
+            const filtered = h.filter(t => {
+                const s = (t.status || '').toLowerCase();
+                if (riwFilter !== 'all') {
+                    if (riwFilter === 'refund') { if (!s.includes('refund') && !s.includes('fund')) return false; }
+                    else if (!s.includes(riwFilter)) return false;
+                }
+                if (q) {
+                    const blob = ((t.id||'') + ' ' + (t.service||'') + ' ' + (t.plan||'') + ' ' + (t.target||'')).toLowerCase();
+                    if (!blob.includes(q)) return false;
+                }
+                return true;
+            });
+            if (filtered.length === 0) {
+                list.innerHTML = `<div class="text-center py-16"><i class="fas fa-search text-gray-300 text-4xl mb-3"></i><p class="text-gray-400 text-sm">${h.length === 0 ? 'Belum ada riwayat pesanan.' : 'Tidak ada pesanan yang cocok.'}</p></div>`;
+                return;
+            }
+            list.innerHTML = filtered.map((t, i) => {
+                let colorClass = "bg-yellow-100 text-yellow-600";
+                let icon = "fa-clock";
+                const s = t.status ? t.status.toLowerCase() : 'proses';
+                if(s.includes('sukses')) { colorClass = "bg-green-100 text-green-600"; icon = "fa-check-circle"; }
+                else if(s.includes('gagal')) { colorClass = "bg-red-100 text-red-600"; icon = "fa-times-circle"; }
+                else if(s.includes('fund')) { colorClass = "bg-blue-100 text-blue-600"; icon = "fa-rotate-left"; }
+                const escId = (t.id||'').replace(/'/g, "\\'");
+                const escService = (t.service||'').replace(/'/g, "\\'");
+                return `
+                <div class="order-item shadow-sm border mb-4 p-4 rounded-2xl cursor-pointer" onclick="document.getElementById('dt-${i}').classList.toggle('active')">
+                    <div class="flex justify-between items-start">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full flex items-center justify-center ${colorClass.replace('text', 'bg').replace('100', '50')}">
+                                <i class="fas ${icon} text-lg"></i>
+                            </div>
+                            <div class="flex flex-col">
+                                <span class="text-[10px] opacity-60 font-bold uppercase tracking-wider">${t.id}</span>
+                                <p class="font-extrabold text-sm leading-tight">${t.service}<span class="block text-[11px] font-medium text-brand-light mt-0.5">${t.plan || 'Detail'}</span></p>
+                            </div>
+                        </div>
+                        <div class="flex flex-col items-end gap-2">
+                            <span class="text-[9px] px-2.5 py-1 rounded-lg font-black uppercase ${colorClass}">${t.status || 'proses'}</span>
+                            <i class="fas fa-chevron-down text-[10px] opacity-30"></i>
+                        </div>
                     </div>
-                    <div class="flex flex-col">
-                        <span class="text-[10px] opacity-60 font-bold uppercase tracking-wider">${t.id}</span>
-                        <p class="font-extrabold text-sm leading-tight">
-                            ${t.service} 
-                            <span class="block text-[11px] font-medium text-brand-light mt-0.5">${t.plan || 'Detail'}</span>
-                        </p>
+                    <div id="dt-${i}" class="order-detail hidden mt-3 pt-3 border-t border-dashed">
+                        <div class="p-3 rounded-xl border">
+                            <p class="text-[9px] font-black text-brand uppercase mb-1 italic">Laporan Admin:</p>
+                            <p class="text-xs font-semibold leading-relaxed opacity-90 whitespace-pre-line">${t.adminNote || 'Pesanan sedang diproses oleh admin...'}</p>
+                        </div>
+                        <div class="order-actions" onclick="event.stopPropagation()">
+                            <button class="btn-copy" onclick="copyOrderId('${escId}')"><i class="fas fa-copy mr-1"></i> Salin ID</button>
+                            <button class="btn-reorder" onclick="reorderItem('${escService}')"><i class="fas fa-rotate-right mr-1"></i> Pesan Lagi</button>
+                        </div>
                     </div>
-                </div>
-                <div class="flex flex-col items-end gap-2">
-                    <span class="text-[9px] px-2.5 py-1 rounded-lg font-black uppercase ${colorClass}">${t.status}</span>
-                    <i class="fas fa-chevron-down text-[10px] opacity-30"></i>
-                </div>
-            </div>
-            
-            <div id="dt-${i}" class="order-detail hidden mt-3 pt-3 border-t border-dashed">
-                <div class="p-3 rounded-xl border">
-                    <p class="text-[9px] font-black text-brand uppercase mb-1 italic">Laporan Admin:</p>
-                    <p class="text-xs font-semibold leading-relaxed opacity-90">${t.adminNote || 'Pesanan sedang diproses oleh admin...'}</p>
-                </div>
-            </div>
-        </div>`;
-    }).join('');
-}
-
-        function toggleLiveChat() { const b = document.getElementById('liveChatBox'); const o = b.style.display === 'flex'; b.style.display = o ? 'none' : 'flex'; if(!o) { renderSavedChat(); document.getElementById('chatNotif').classList.add('hidden'); } }
-        async function sendLiveChat() {
-            const i = document.getElementById('chatInput'); if(!i.value) return; const m = i.value; addChatMessage('user', m, true);
-            setTimeout(() => addChatMessage('bot', 'Wait, Memanggil admin Rems...', true), 600); i.value = '';
-            await fetch(`https://api.telegram.org/bot${TICKET_BOT}/sendMessage?chat_id=${ADMIN_CHAT_ID}&text=${encodeURIComponent(`🎫 TIKET [${USER_ID}]\n${m}\nBalas: /${USER_ID} [pesan]`)}`);
+                </div>`;
+            }).join('');
         }
+
+        function copyOrderId(id) {
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(id).then(() => showToast('ID order disalin: ' + id, 'success', 2000));
+            } else {
+                const ta = document.createElement('textarea'); ta.value = id; document.body.appendChild(ta); ta.select();
+                try { document.execCommand('copy'); showToast('ID order disalin!','success',2000); } catch(e){ showToast('Gagal salin','error'); }
+                ta.remove();
+            }
+        }
+        function reorderItem(service) { closeModal('modalOrder'); setTimeout(() => openProduct(service), 200); }
+
+        // ============ LIVE CHAT ============
+        function toggleLiveChat() {
+            const b = document.getElementById('liveChatBox');
+            const o = b.style.display === 'flex';
+            b.style.display = o ? 'none' : 'flex';
+            if(!o) {
+                renderSavedChat();
+                document.getElementById('chatNotif').classList.add('hidden');
+                requestNotifPerm();
+            }
+        }
+        async function sendLiveChat() {
+            const i = document.getElementById('chatInput');
+            if(!i.value.trim()) return;
+            const m = i.value.trim();
+            addChatMessage('user', m, true);
+            i.value = '';
+            try {
+                await fetch(`https://api.telegram.org/bot${TICKET_BOT}/sendMessage?chat_id=${ADMIN_CHAT_ID}&text=${encodeURIComponent(`🎫 TIKET [${USER_ID}]\n${m}\n\nBalas: /${USER_ID} [pesan]\nFoto: kirim foto dgn caption /${USER_ID} [teks]\nMengetik: /typing ${USER_ID}`)}`);
+                setTimeout(() => addChatMessage('bot', 'Wait, memanggil admin Rems...', true), 600);
+            } catch(e) { showToast('Gagal kirim chat. Coba lagi!','error'); }
+        }
+        function sendQuickReply(text) { document.getElementById('chatInput').value = text; sendLiveChat(); }
+
+        function handleChatPhotoSelect(input) {
+            const f = input.files && input.files[0];
+            if (!f) return;
+            sendChatPhoto(f);
+            input.value = '';
+        }
+        async function sendChatPhoto(file) {
+            try {
+                showToast('Mengirim foto...','info', 1500);
+                const dataUrl = await resizeImage(file, 800);
+                addChatPhoto('user', dataUrl, '', true);
+                const cap = encodeURIComponent(`🎫 FOTO TIKET [${USER_ID}]\n\nBalas pakai /${USER_ID} [pesan]\nKirim foto balasan: caption /${USER_ID} [teks]`);
+                const fd = new FormData();
+                fd.append('photo', file);
+                await fetch(`https://api.telegram.org/bot${TICKET_BOT}/sendPhoto?chat_id=${ADMIN_CHAT_ID}&caption=${cap}`, { method: 'POST', body: fd });
+            } catch(e) { showToast('Gagal kirim foto','error'); }
+        }
+        function resizeImage(file, maxSize) {
+            return new Promise((resolve, reject) => {
+                const r = new FileReader();
+                r.onload = e => {
+                    const img = new Image();
+                    img.onload = () => {
+                        let w = img.width, h = img.height;
+                        if (w > maxSize || h > maxSize) {
+                            const scale = maxSize / Math.max(w, h);
+                            w = Math.round(w * scale); h = Math.round(h * scale);
+                        }
+                        const c = document.createElement('canvas');
+                        c.width = w; c.height = h;
+                        c.getContext('2d').drawImage(img, 0, 0, w, h);
+                        resolve(c.toDataURL('image/jpeg', 0.82));
+                    };
+                    img.onerror = reject;
+                    img.src = e.target.result;
+                };
+                r.onerror = reject;
+                r.readAsDataURL(file);
+            });
+        }
+
         function addChatMessage(r, t, s) {
-            const c = document.getElementById('chatMessages'); const tm = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            const d = document.createElement('div'); d.className = `msg msg-${r}`; d.innerHTML = `${t} <span class="msg-time">${tm}</span>`;
-            c.appendChild(d); c.scrollTop = c.scrollHeight; if(s) saveChat(r, t);
-            if(r === 'bot' && document.getElementById('liveChatBox').style.display !== 'flex') document.getElementById('chatNotif').classList.remove('hidden');
+            const c = document.getElementById('chatMessages');
+            const tm = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+            const d = document.createElement('div');
+            d.className = `msg msg-${r}`;
+            d.innerHTML = `${escapeHtml(t)} <span class="msg-time">${tm}</span>`;
+            c.appendChild(d);
+            c.scrollTop = c.scrollHeight;
+            if(s) saveChat(r, t);
+            if(r === 'bot') {
+                hideTyping();
+                if (document.getElementById('liveChatBox').style.display !== 'flex') {
+                    document.getElementById('chatNotif').classList.remove('hidden');
+                    pushNotif('💬 Admin REMSDIGI', t.length > 80 ? t.slice(0,80)+'...' : t);
+                }
+            }
+        }
+        function addChatPhoto(r, url, caption, s) {
+            const c = document.getElementById('chatMessages');
+            const tm = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+            const d = document.createElement('div');
+            d.className = `msg msg-${r} msg-photo`;
+            const safeCap = caption ? `<div class="cap">${escapeHtml(caption)}</div>` : '';
+            d.innerHTML = `<img src="${url}" onclick="showLightbox('${url.replace(/'/g, "\\'")}')">${safeCap}<span class="msg-time">${tm}</span>`;
+            c.appendChild(d);
+            c.scrollTop = c.scrollHeight;
+            if(s) saveChat(r, caption || '[foto]', 'photo', { photoUrl: url });
+            if(r === 'bot') {
+                hideTyping();
+                if (document.getElementById('liveChatBox').style.display !== 'flex') {
+                    document.getElementById('chatNotif').classList.remove('hidden');
+                    pushNotif('📷 Admin REMSDIGI', 'Foto baru: ' + (caption || '(tanpa caption)'));
+                }
+            }
+        }
+        function showTyping() {
+            hideTyping();
+            const c = document.getElementById('chatMessages');
+            const d = document.createElement('div');
+            d.id = 'typingBubble';
+            d.className = 'msg msg-bot';
+            d.innerHTML = `<div class="typing-dots"><span></span><span></span><span></span></div>`;
+            c.appendChild(d);
+            c.scrollTop = c.scrollHeight;
+            if (typingTimer) clearTimeout(typingTimer);
+            typingTimer = setTimeout(hideTyping, 6000);
+        }
+        function hideTyping() {
+            const t = document.getElementById('typingBubble');
+            if (t) t.remove();
+            if (typingTimer) { clearTimeout(typingTimer); typingTimer = null; }
         }
         function renderSavedChat() {
-            const c = document.getElementById('chatMessages'); c.innerHTML = '';
+            const c = document.getElementById('chatMessages');
+            c.innerHTML = '';
             const l = JSON.parse(localStorage.getItem('rems_c') || '[]');
-            l.forEach(x => { const d = document.createElement('div'); d.className = `msg msg-${x.role}`; d.innerHTML = `${x.text} <span class="msg-time">${x.time}</span>`; c.appendChild(d); });
+            l.forEach(x => {
+                const d = document.createElement('div');
+                if (x.type === 'photo' && x.photoUrl) {
+                    d.className = `msg msg-${x.role} msg-photo`;
+                    const cap = x.text && x.text !== '[foto]' ? `<div class="cap">${escapeHtml(x.text)}</div>` : '';
+                    d.innerHTML = `<img src="${x.photoUrl}" onclick="showLightbox('${x.photoUrl.replace(/'/g, "\\'")}')">${cap}<span class="msg-time">${x.time}</span>`;
+                } else {
+                    d.className = `msg msg-${x.role}`;
+                    d.innerHTML = `${escapeHtml(x.text)} <span class="msg-time">${x.time}</span>`;
+                }
+                c.appendChild(d);
+            });
             c.scrollTop = c.scrollHeight;
         }
+        function escapeHtml(s) { if (typeof s !== 'string') return ''; return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
+        // ============ NAV / PAGE ============
         function toggleSidebar(s) { document.getElementById('sidebar').classList.toggle('-translate-x-full', !s); document.getElementById('sbOverlay').classList.toggle('hidden', !s); }
-        function showPage(p) { document.querySelectorAll('.page-content').forEach(x => x.classList.remove('active')); document.getElementById('page-'+p).classList.add('active'); if(p === 'riwayat') renderRiwayat(); toggleSidebar(false); }
+        function showPage(p) {
+            document.querySelectorAll('.page-content').forEach(x => x.classList.remove('active'));
+            const target = document.getElementById('page-'+p);
+            if (target) target.classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            const navEl = document.getElementById('nav-'+p);
+            if (navEl) navEl.classList.add('active');
+            if(p === 'riwayat') renderRiwayat();
+            toggleSidebar(false);
+        }
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
-        function handleSearch() { const k = document.getElementById('searchInput').value.toLowerCase(); document.querySelectorAll('.menu-card').forEach(it => it.style.display = it.innerText.toLowerCase().includes(k) ? 'flex' : 'none'); }
-        
+        function handleSearch() {
+            const k = document.getElementById('searchInput').value.toLowerCase();
+            document.querySelectorAll('#servicesGrid .menu-card').forEach(it => it.style.display = it.innerText.toLowerCase().includes(k) ? 'flex' : 'none');
+        }
+        function toggleFAQ(el) { el.classList.toggle('open'); }
+
+        // initial
         renderSavedChat();
+        // start sync immediately + interval already set above
+        syncData();
     </script>
 </body>
 </html>

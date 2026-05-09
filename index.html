@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>REMSDIGI - Premium Digital Store</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -912,22 +913,64 @@
         }
 
         async function sendOrder() {
-            const f = document.getElementById('proofImg').files[0];
-            if(!f) return showToast('Upload bukti dulu!','error');
-            const btn = document.getElementById('btnSubmit');
-            btn.disabled = true; btn.innerText = "Mengirim...";
-            try {
-                const cap = encodeURIComponent(`🆕 ORDER BARU (${orderData.id})\nLayanan: ${orderData.service}\nPaket: ${orderData.plan}\nTarget: ${orderData.target}\nUserID: ${USER_ID}\n\nBalas Rems: /send ${orderData.id}\nsukses\nisi_pesan`);
-                const fd = new FormData(); fd.append('photo', f);
-                await fetch(`https://api.telegram.org/bot${ORDER_BOT}/sendPhoto?chat_id=${ADMIN_CHAT_ID}&caption=${cap}`, { method: "POST", body: fd });
-                saveToLocal({ id: orderData.id, service: orderData.service, plan: orderData.plan, target: orderData.target, status: 'proses', adminNote: '', ts: Date.now() });
-                showToast('Pesanan berhasil dikirim! Cek menu Riwayat.','success');
-                setTimeout(() => location.reload(), 1200);
-            } catch(e) {
-                showToast('Gagal kirim. Cek koneksi!','error');
-                btn.disabled = false; btn.innerText = "Konfirmasi Pembayaran";
+    const f = document.getElementById('proofImg').files[0];
+    
+    if (!f) {
+        return Swal.fire({
+            title: 'Error!',
+            text: 'Upload bukti dulu!',
+            icon: 'error',
+            confirmButtonText: 'Oke'
+        });
+    }
+
+    const btn = document.getElementById('btnSubmit');
+    btn.disabled = true;
+    btn.innerText = "Mengirim...";
+
+    try {
+        const cap = encodeURIComponent(`🆕 ORDER BARU (${orderData.id})\nLayanan: ${orderData.service}\nPaket: ${orderData.plan}\nTarget: ${orderData.target}\nUserID: ${USER_ID}\n\nBalas Rems: /send ${orderData.id}\nsukses\nisi_pesan`);
+        const fd = new FormData();
+        fd.append('photo', f);
+
+        await fetch(`https://api.telegram.org/bot${ORDER_BOT}/sendPhoto?chat_id=${ADMIN_CHAT_ID}&caption=${cap}`, {
+            method: "POST",
+            body: fd
+        });
+
+        saveToLocal({
+            id: orderData.id,
+            service: orderData.service,
+            plan: orderData.plan,
+            target: orderData.target,
+            status: 'proses',
+            adminNote: '',
+            ts: Date.now()
+        });
+
+        // Mengganti showToast dengan SweetAlert Berhasil
+        Swal.fire({
+            title: 'Berhasil',
+            text: 'Pembelian Berhasil! Cek menu Riwayat.',
+            icon: 'success',
+            confirmButtonText: 'Oke'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                location.reload();
             }
-        }
+        });
+
+    } catch (e) {
+        Swal.fire({
+            title: 'Gagal',
+            text: 'Gagal kirim. Cek koneksi!',
+            icon: 'error',
+            confirmButtonText: 'Coba Lagi'
+        });
+        btn.disabled = false;
+        btn.innerText = "Konfirmasi Pembayaran";
+    }
+}
 
         // ============ RIWAYAT ============
         function setRiwFilter(f) {

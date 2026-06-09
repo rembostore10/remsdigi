@@ -479,41 +479,58 @@ updateSlider();
             }
         }
 
-        // ============ STATUS TOKO (Membaca dari file status.json di GitHub) ============
+        // ============ STATUS TOKO (read-only poll, dengan memori localStorage) ============
 async function updateShopStatus() {
     try {
-        // Ditambahkan ?t= agar Chrome selalu mengambil data terbaru dari GitHub tanpa cache
-        const res = await fetch(`https://raw.githubusercontent/${GITHUB_USER}/${GITHUB_REPO}/main/status.json?t=${Date.now()}`);
+        const res = await fetch(`https://api.telegram.org/bot${STATUS_BOT_TOKEN}/getUpdates?limit=1&offset=-1`);
         const data = await res.json();
         
-        if (data && data.status) {
-            const lastMsg = data.status.trim().toUpperCase();
-            const sText = document.getElementById('statusText');
-            const sDot = document.getElementById('statusDot');
-            const mtMode = document.getElementById('maintenanceMode');
-            
-            if (lastMsg === 'PERBAIKAN') { 
-                mtMode.classList.remove('hidden'); 
-                document.body.style.overflow='hidden'; 
-                return; 
-            } else { 
-                mtMode.classList.add('hidden'); 
-                document.body.style.overflow='auto'; 
-            }
-            
-            if (lastMsg === 'CLOSE' || lastMsg === 'CLOSED') { 
-                sText.innerText = "Closed"; 
-                sDot.className = "w-2 h-2 rounded-full bg-red-500"; 
-            } else if (lastMsg === 'SLOW') { 
-                sText.innerText = "Slow Respon"; 
-                sDot.className = "w-2 h-2 rounded-full bg-yellow-400 animate-pulse"; 
-            } else if (lastMsg === 'OPEN') { 
-                sText.innerText = "Open"; 
-                sDot.className = "w-2 h-2 rounded-full bg-green-400 animate-pulse"; 
-            }
+        let lastMsg = "";
+
+        // 1. Cek apakah ada pesan baru dari Telegram
+        if (data.result && data.result.length > 0 && data.result[0].message && data.result[0].message.text) {
+            lastMsg = data.result[0].message.text.trim().toUpperCase();
+            // Simpan status terbaru ini ke memori Chrome (localStorage) agar permanen
+            localStorage.setItem('rems_shop_status', lastMsg);
+        } else {
+            // 2. Jika pesan di Telegram sudah kosong/dihapus, ambil dari memori Chrome yang disimpan sebelumnya
+            lastMsg = localStorage.getItem('rems_shop_status') || 'OPEN'; // Default OPEN jika memori kosong
+        }
+
+        const sText = document.getElementById('statusText');
+        const sDot = document.getElementById('statusDot');
+        const mtMode = document.getElementById('maintenanceMode');
+
+        // 3. Eksekusi status ke tampilan website
+        if (lastMsg === 'PERBAIKAN') { 
+            mtMode.classList.remove('hidden'); 
+            document.body.style.overflow='hidden'; 
+            return; 
+        } else { 
+            mtMode.classList.add('hidden'); 
+            document.body.style.overflow='auto'; 
+        }
+
+        if (lastMsg === 'CLOSE' || lastMsg === 'CLOSED') { 
+            sText.innerText = "Closed"; 
+            sDot.className = "w-2 h-2 rounded-full bg-red-500"; 
+        } else if (lastMsg === 'SLOW') { 
+            sText.innerText = "Slow Respon"; 
+            sDot.className = "w-2 h-2 rounded-full bg-yellow-400 animate-pulse"; 
+        } else if (lastMsg === 'OPEN') { 
+            sText.innerText = "Open"; 
+            sDot.className = "w-2 h-2 rounded-full bg-green-400 animate-pulse"; 
         }
     } catch(e) {
-        console.error("Gagal memperbarui status toko dari GitHub:", e);
+        // Jika internet pembeli putus/gagal fetch, tetap gunakan status terakhir dari memori Chrome
+        const savedStatus = localStorage.getItem('rems_shop_status');
+        if (savedStatus) {
+            const sText = document.getElementById('statusText');
+            const sDot = document.getElementById('statusDot');
+            if (savedStatus === 'CLOSE' || savedStatus === 'CLOSED') { sText.innerText = "Closed"; sDot.className = "w-2 h-2 rounded-full bg-red-500"; }
+            else if (savedStatus === 'SLOW') { sText.innerText = "Slow Respon"; sDot.className = "w-2 h-2 rounded-full bg-yellow-400 animate-pulse"; }
+            else if (savedStatus === 'OPEN') { sText.innerText = "Open"; sDot.className = "w-2 h-2 rounded-full bg-green-400 animate-pulse"; }
+        }
     }
 }
 setInterval(updateShopStatus, 10000); 

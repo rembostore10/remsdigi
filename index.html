@@ -689,7 +689,7 @@ async function handleStatusBotUpdate(u) {
 
     // /list
     if (text === '/list') {
-        // INFO: Teks "sedang ambil dari website..." dihapus agar chat lebih bersih
+        await sendBotMsg(STATUS_BOT_TOKEN, chatId, `📨 Daftar produk diminta, sedang ambil dari website...`);
         try {
             await fetchProduk();
             let totalK = 0, totalL = 0, totalV = 0;
@@ -703,7 +703,7 @@ async function handleStatusBotUpdate(u) {
                     out += `▸ <b>${escapeHtml(l)}</b>\n`;
                     (lay[l] || []).forEach(v => {
                         totalV++;
-                        out += `   • ${escapeHtml(v.n)} = Rp${(v.p||0).toLocaleString('id-ID')}\n`;
+                        out += `    • ${escapeHtml(v.n)} = Rp${(v.p||0).toLocaleString('id-ID')}\n`;
                     });
                 }
                 out += '\n';
@@ -726,7 +726,8 @@ async function handleStatusBotUpdate(u) {
 
     // /tambah Kategori\nLayanan | Varian | Harga
     if (text.startsWith('/tambah')) {
-        if (!GITHUB_PAT) { await sendBotMsg(STATUS_BOT_TOKEN, chatId, `❌ <b>GITHUB_PAT belum diset</b> di kode index.html.`); return; }
+        await sendBotMsg(STATUS_BOT_TOKEN, chatId, `📨 Perintah TAMBAH diterima, sedang memproses ke website...`);
+        if (!GITHUB_PAT) { await sendBotMsg(STATUS_BOT_TOKEN, chatId, `❌ <b>GITHUB_PAT belum diset</b> di kode index.html.\nBuat fine-grained token di github.com/settings/personal-access-tokens (scope: rembostore10/remsdigi, Contents Read &amp; Write), lalu paste ke baris <code>const GITHUB_PAT = "..."</code> di file index.html dan commit ulang.`); return; }
         try {
             const lines = text.split('\n');
             const kat = lines[0].substring('/tambah'.length).trim();
@@ -747,7 +748,7 @@ async function handleStatusBotUpdate(u) {
             if (added === 0) throw new Error('Tidak ada item valid (cek harga harus angka)');
             await ghPutJson(JSON_PATH, updated, `Tambah ${added} produk ke ${kat} via Telegram`);
             dbProduk = updated;
-            await sendBotMsg(STATUS_BOT_TOKEN, chatId, `✅ <b>${added} produk</b> berhasil ditambahkan ke kategori <b>${escapeHtml(kat)}</b>.`);
+            await sendBotMsg(STATUS_BOT_TOKEN, chatId, `✅ <b>${added} produk</b> berhasil ditambahkan ke kategori <b>${escapeHtml(kat)}</b>.\n🌐 Vercel akan deploy otomatis ~30 detik.`);
         } catch(e) {
             await sendBotMsg(STATUS_BOT_TOKEN, chatId, `❌ Gagal tambah: ${e.message}`);
         }
@@ -756,6 +757,7 @@ async function handleStatusBotUpdate(u) {
 
     // /edit Kategori | Layanan | Varian | HargaBaru
     if (text.startsWith('/edit ') || text.startsWith('/edit\n')) {
+        await sendBotMsg(STATUS_BOT_TOKEN, chatId, `📨 Perintah EDIT diterima, sedang update harga...`);
         if (!GITHUB_PAT) { await sendBotMsg(STATUS_BOT_TOKEN, chatId, `❌ GITHUB_PAT belum diset di kode.`); return; }
         try {
             const body = text.substring('/edit'.length).trim();
@@ -783,6 +785,7 @@ async function handleStatusBotUpdate(u) {
 
     // /hapusvarian Kategori | Layanan | Varian
     if (text.startsWith('/hapusvarian')) {
+        await sendBotMsg(STATUS_BOT_TOKEN, chatId, `📨 HAPUS VARIAN diterima, sedang memproses...`);
         if (!GITHUB_PAT) { await sendBotMsg(STATUS_BOT_TOKEN, chatId, `❌ GITHUB_PAT belum diset di kode.`); return; }
         try {
             const body = text.substring('/hapusvarian'.length).trim();
@@ -806,6 +809,7 @@ async function handleStatusBotUpdate(u) {
 
     // /hapus Kategori | Layanan (HARUS setelah /hapusvarian)
     if (text.startsWith('/hapus')) {
+        await sendBotMsg(STATUS_BOT_TOKEN, chatId, `📨 HAPUS LAYANAN diterima, sedang memproses...`);
         if (!GITHUB_PAT) { await sendBotMsg(STATUS_BOT_TOKEN, chatId, `❌ GITHUB_PAT belum diset di kode.`); return; }
         try {
             const body = text.substring('/hapus'.length).trim();
@@ -832,11 +836,11 @@ async function handleStatusBotUpdate(u) {
     }
 }
 
-// ============ MAIN SYNC LOOP (Diedit Anti-Spam & Anti-Overlapping) ============
-let isSyncing = false; // Pengunci sirkuit agar interval tidak tumpang tindih
+// ============ MAIN SYNC LOOP (Anti-Spam & Anti-Overlapping Sempurna) ============
+let isSyncing = false; // Kunci pengaman sirkuit utama
 
 async function syncData() {
-    if (isSyncing) return; // Jika proses sinkronisasi sebelumnya belum kelar, batalkan loop detik ini.
+    if (isSyncing) return; // Lewati siklus detik ini jika siklus lama masih berproses
     isSyncing = true;
 
     try {
@@ -847,8 +851,7 @@ async function syncData() {
             for (const u of dataO.result) {
                 lastOrderUpdate = u.update_id;
                 localStorage.setItem('last_o_id', lastOrderUpdate);
-                // Jalankan di latar belakang (tanpa await), agar offset Telegram langsung maju maju maju
-                handleOrderBotUpdate(u).catch(e => console.error(e));
+                await handleOrderBotUpdate(u); // Gunakan await agar antrean berjalan sekuensial
             }
         }
     } catch(e) {}
@@ -861,7 +864,7 @@ async function syncData() {
             for (const u of dataT.result) {
                 lastTicketUpdate = u.update_id;
                 localStorage.setItem('last_t_id', lastTicketUpdate);
-                handleTicketBotUpdate(u).catch(e => console.error(e));
+                await handleTicketBotUpdate(u);
             }
         }
     } catch(e) {}
@@ -872,21 +875,19 @@ async function syncData() {
         const dataS = await resS.json();
         if (dataS.result && dataS.result.length > 0) {
             for (const u of dataS.result) {
-                // LANGSUNG KUNCI DI SINI: Update ID lokal diset terlebih dahulu sebelum fungsi berat berjalan
                 lastStatusUpdate = u.update_id;
                 localStorage.setItem('last_s_id', lastStatusUpdate);
-                // Jalankan tanpa await, membebaskan antrean request Telegram berikutnya
-                handleStatusBotUpdate(u).catch(e => console.error(e));
+                await handleStatusBotUpdate(u); // Di-await penuh agar pembacaan 'produk.json' sinkron
             }
         }
     } catch(e) {}
 
-    isSyncing = false; // Buka kembali gerbang sinkronisasi setelah siklus beres
+    isSyncing = false; // Buka gerbang kunci setelah satu siklus loop tuntas
 }
 
-// Interval diubah ke 3000ms (3 detik) agar lebih ramah browser & menghindari hit rate-limit Telegram
-setInterval(syncData, 3000);
-
+// Setel interval ke 2000ms (2 detik). Tidak tumpang tindih berkat variabel isSyncing.
+setInterval(syncData, 2000);
+        
         // ============ PRODUCTS / FORM ============
         function openProduct(type) {
             orderData.service = type;

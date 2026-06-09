@@ -1,3 +1,6 @@
 {
   "status": "OPEN"
+  "status":"SLOW"
+  "status":"CLOSE"
+  "status":"PERBAIKAN"
 }

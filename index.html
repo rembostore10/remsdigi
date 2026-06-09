@@ -479,26 +479,46 @@ updateSlider();
             }
         }
 
-        // ============ STATUS TOKO (read-only poll, latest msg) ============
-        async function updateShopStatus() {
-            try {
-                const res = await fetch(`https://api.telegram.org/bot${STATUS_BOT_TOKEN}/getUpdates?limit=1&offset=-1`);
-                const data = await res.json();
-                if (data.result && data.result.length > 0 && data.result[0].message && data.result[0].message.text) {
-                    const lastMsg = data.result[0].message.text.trim().toUpperCase();
-                    const sText = document.getElementById('statusText');
-                    const sDot = document.getElementById('statusDot');
-                    const mtMode = document.getElementById('maintenanceMode');
-                    if (lastMsg === 'PERBAIKAN') { mtMode.classList.remove('hidden'); document.body.style.overflow='hidden'; return; }
-                    else { mtMode.classList.add('hidden'); document.body.style.overflow='auto'; }
-                    if (lastMsg === 'CLOSE' || lastMsg === 'CLOSED') { sText.innerText = "Closed"; sDot.className = "w-2 h-2 rounded-full bg-red-500"; }
-                    else if (lastMsg === 'SLOW') { sText.innerText = "Slow Respon"; sDot.className = "w-2 h-2 rounded-full bg-yellow-400 animate-pulse"; }
-                    else if (lastMsg === 'OPEN') { sText.innerText = "Open"; sDot.className = "w-2 h-2 rounded-full bg-green-400 animate-pulse"; }
-                }
-            } catch(e) {}
+        // ============ STATUS TOKO (Membaca dari file status.json di GitHub) ============
+async function updateShopStatus() {
+    try {
+        // Ditambahkan ?t= agar Chrome selalu mengambil data terbaru dari GitHub tanpa cache
+        const res = await fetch(`https://raw.githubusercontent/${GITHUB_USER}/${GITHUB_REPO}/main/status.json?t=${Date.now()}`);
+        const data = await res.json();
+        
+        if (data && data.status) {
+            const lastMsg = data.status.trim().toUpperCase();
+            const sText = document.getElementById('statusText');
+            const sDot = document.getElementById('statusDot');
+            const mtMode = document.getElementById('maintenanceMode');
+            
+            if (lastMsg === 'PERBAIKAN') { 
+                mtMode.classList.remove('hidden'); 
+                document.body.style.overflow='hidden'; 
+                return; 
+            } else { 
+                mtMode.classList.add('hidden'); 
+                document.body.style.overflow='auto'; 
+            }
+            
+            if (lastMsg === 'CLOSE' || lastMsg === 'CLOSED') { 
+                sText.innerText = "Closed"; 
+                sDot.className = "w-2 h-2 rounded-full bg-red-500"; 
+            } else if (lastMsg === 'SLOW') { 
+                sText.innerText = "Slow Respon"; 
+                sDot.className = "w-2 h-2 rounded-full bg-yellow-400 animate-pulse"; 
+            } else if (lastMsg === 'OPEN') { 
+                sText.innerText = "Open"; 
+                sDot.className = "w-2 h-2 rounded-full bg-green-400 animate-pulse"; 
+            }
         }
-        setInterval(updateShopStatus, 10000); updateShopStatus();
-
+    } catch(e) {
+        console.error("Gagal memperbarui status toko dari GitHub:", e);
+    }
+}
+setInterval(updateShopStatus, 10000); 
+updateShopStatus();
+        
         // ============ ORDER BOT HANDLER (only /ping, /send) ============
         async function handleOrderBotUpdate(u) {
             const m = u.message;

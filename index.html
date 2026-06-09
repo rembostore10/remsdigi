@@ -668,214 +668,224 @@ updateShopStatus();
         }
 
         // ============ STATUS BOT HANDLER (status keywords + admin produk) ============
-        async function handleStatusBotUpdate(u) {
-            const m = u.message;
-            if (!m || !m.text) return;
-            const chatId = m.chat.id;
-            const text = m.text.trim();
-            const upper = text.toUpperCase();
+async function handleStatusBotUpdate(u) {
+    const m = u.message;
+    if (!m || !m.text) return;
+    const chatId = m.chat.id;
+    const text = m.text.trim();
+    const upper = text.toUpperCase();
 
-            // Status keyword (silent — sudah dihandle updateShopStatus). Beri ack singkat saja.
-            if (['OPEN','CLOSE','CLOSED','SLOW','PERBAIKAN'].includes(upper)) {
-                await sendBotMsg(STATUS_BOT_TOKEN, chatId, `✅ Status toko diubah jadi <b>${upper}</b> &amp; sudah terkirim ke website.`);
-                return;
-            }
+    // Status keyword (silent — sudah dihandle updateShopStatus). Beri ack singkat saja.
+    if (['OPEN','CLOSE','CLOSED','SLOW','PERBAIKAN'].includes(upper)) {
+        await sendBotMsg(STATUS_BOT_TOKEN, chatId, `✅ Status toko diubah jadi <b>${upper}</b> &amp; sudah terkirim ke website.`);
+        return;
+    }
 
-            // /whoami
-            if (text === '/whoami') {
-                await sendBotMsg(STATUS_BOT_TOKEN, chatId, `🆔 <b>Identitas Telegram Anda</b>\nChat ID: <code>${chatId}</code>\nNama: ${escapeHtml(m.from?.first_name || '-')} ${escapeHtml(m.from?.last_name || '')}\nUsername: @${escapeHtml(m.from?.username || '-')}\n\n👤 Polling browser: <code>${USER_ID}</code>`);
-                return;
-            }
+    // /whoami
+    if (text === '/whoami') {
+        await sendBotMsg(STATUS_BOT_TOKEN, chatId, `🆔 <b>Identitas Telegram Anda</b>\nChat ID: <code>${chatId}</code>\nNama: ${escapeHtml(m.from?.first_name || '-')} ${escapeHtml(m.from?.last_name || '')}\nUsername: @${escapeHtml(m.from?.username || '-')}\n\n👤 Polling browser: <code>${USER_ID}</code>`);
+        return;
+    }
 
-            // /list
-            if (text === '/list') {
-                await sendBotMsg(STATUS_BOT_TOKEN, chatId, `📨 Daftar produk diminta, sedang ambil dari website...`);
-                try {
-                    await fetchProduk();
-                    let totalK = 0, totalL = 0, totalV = 0;
-                    let out = '📦 <b>DAFTAR PRODUK REMSDIGI</b>\n\n';
-                    for (const k of Object.keys(dbProduk)) {
-                        totalK++;
-                        out += `═══ <b>${escapeHtml(k)}</b> ═══\n`;
-                        const lay = dbProduk[k] || {};
-                        for (const l of Object.keys(lay)) {
-                            totalL++;
-                            out += `▸ <b>${escapeHtml(l)}</b>\n`;
-                            (lay[l] || []).forEach(v => {
-                                totalV++;
-                                out += `   • ${escapeHtml(v.n)} = Rp${(v.p||0).toLocaleString('id-ID')}\n`;
-                            });
-                        }
-                        out += '\n';
-                    }
-                    // chunked send (limit ~3800 utk safety)
-                    const parts = [];
-                    let buf = '';
-                    for (const line of out.split('\n')) {
-                        if ((buf + line + '\n').length > 3800) { parts.push(buf); buf = ''; }
-                        buf += line + '\n';
-                    }
-                    if (buf) parts.push(buf);
-                    for (const p of parts) await sendBotMsg(STATUS_BOT_TOKEN, chatId, p);
-                    await sendBotMsg(STATUS_BOT_TOKEN, chatId, `✅ Selesai. Total: <b>${totalK}</b> kategori, <b>${totalL}</b> layanan, <b>${totalV}</b> varian.`);
-                } catch(e) {
-                    await sendBotMsg(STATUS_BOT_TOKEN, chatId, `❌ Gagal ambil produk: ${e.message}`);
+    // /list
+    if (text === '/list') {
+        // INFO: Teks "sedang ambil dari website..." dihapus agar chat lebih bersih
+        try {
+            await fetchProduk();
+            let totalK = 0, totalL = 0, totalV = 0;
+            let out = '📦 <b>DAFTAR PRODUK REMSDIGI</b>\n\n';
+            for (const k of Object.keys(dbProduk)) {
+                totalK++;
+                out += `═══ <b>${escapeHtml(k)}</b> ═══\n`;
+                const lay = dbProduk[k] || {};
+                for (const l of Object.keys(lay)) {
+                    totalL++;
+                    out += `▸ <b>${escapeHtml(l)}</b>\n`;
+                    (lay[l] || []).forEach(v => {
+                        totalV++;
+                        out += `   • ${escapeHtml(v.n)} = Rp${(v.p||0).toLocaleString('id-ID')}\n`;
+                    });
                 }
-                return;
+                out += '\n';
             }
-
-            // /tambah Kategori\nLayanan | Varian | Harga
-            if (text.startsWith('/tambah')) {
-                await sendBotMsg(STATUS_BOT_TOKEN, chatId, `📨 Perintah TAMBAH diterima, sedang memproses ke website...`);
-                if (!GITHUB_PAT) { await sendBotMsg(STATUS_BOT_TOKEN, chatId, `❌ <b>GITHUB_PAT belum diset</b> di kode index.html.\nBuat fine-grained token di github.com/settings/personal-access-tokens (scope: rembostore10/remsdigi, Contents Read &amp; Write), lalu paste ke baris <code>const GITHUB_PAT = "..."</code> di file index.html dan commit ulang.`); return; }
-                try {
-                    const lines = text.split('\n');
-                    const kat = lines[0].substring('/tambah'.length).trim();
-                    if (!kat) throw new Error('Kategori kosong. Format:\n/tambah Kategori\nLayanan | Varian | Harga');
-                    const items = lines.slice(1).map(l => l.split('|').map(s=>s.trim())).filter(p => p.length === 3 && p[0] && p[1] && p[2]);
-                    if (items.length === 0) throw new Error('Tidak ada baris valid. Tiap baris: Layanan | Varian | Harga');
-                    await fetchProduk();
-                    const updated = JSON.parse(JSON.stringify(dbProduk));
-                    if (!updated[kat]) updated[kat] = {};
-                    let added = 0;
-                    for (const [lay, vrn, hrg] of items) {
-                        const hi = parseInt((hrg||'').replace(/[^\d]/g,''));
-                        if (isNaN(hi)) continue;
-                        if (!updated[kat][lay]) updated[kat][lay] = [];
-                        updated[kat][lay].push({ n: vrn, p: hi });
-                        added++;
-                    }
-                    if (added === 0) throw new Error('Tidak ada item valid (cek harga harus angka)');
-                    await ghPutJson(JSON_PATH, updated, `Tambah ${added} produk ke ${kat} via Telegram`);
-                    dbProduk = updated;
-                    await sendBotMsg(STATUS_BOT_TOKEN, chatId, `✅ <b>${added} produk</b> berhasil ditambahkan ke kategori <b>${escapeHtml(kat)}</b>.\n🌐 Vercel akan deploy otomatis ~30 detik.`);
-                } catch(e) {
-                    await sendBotMsg(STATUS_BOT_TOKEN, chatId, `❌ Gagal tambah: ${e.message}`);
-                }
-                return;
+            // chunked send (limit ~3800 utk safety)
+            const parts = [];
+            let buf = '';
+            for (const line of out.split('\n')) {
+                if ((buf + line + '\n').length > 3800) { parts.push(buf); buf = ''; }
+                buf += line + '\n';
             }
+            if (buf) parts.push(buf);
+            for (const p of parts) await sendBotMsg(STATUS_BOT_TOKEN, chatId, p);
+            await sendBotMsg(STATUS_BOT_TOKEN, chatId, `✅ Selesai. Total: <b>${totalK}</b> kategori, <b>${totalL}</b> layanan, <b>${totalV}</b> varian.`);
+        } catch(e) {
+            await sendBotMsg(STATUS_BOT_TOKEN, chatId, `❌ Gagal ambil produk: ${e.message}`);
+        }
+        return;
+    }
 
-            // /edit Kategori | Layanan | Varian | HargaBaru
-            if (text.startsWith('/edit ') || text.startsWith('/edit\n')) {
-                await sendBotMsg(STATUS_BOT_TOKEN, chatId, `📨 Perintah EDIT diterima, sedang update harga...`);
-                if (!GITHUB_PAT) { await sendBotMsg(STATUS_BOT_TOKEN, chatId, `❌ GITHUB_PAT belum diset di kode.`); return; }
-                try {
-                    const body = text.substring('/edit'.length).trim();
-                    const parts = body.split('|').map(s=>s.trim());
-                    if (parts.length !== 4) throw new Error('Format: /edit Kategori | Layanan | Varian | HargaBaru');
-                    const [kat, lay, vrn, hrg] = parts;
-                    const hi = parseInt(hrg.replace(/[^\d]/g,''));
-                    if (isNaN(hi)) throw new Error('Harga baru tidak valid');
-                    await fetchProduk();
-                    const updated = JSON.parse(JSON.stringify(dbProduk));
-                    if (!updated[kat] || !updated[kat][lay]) throw new Error(`"${kat} > ${lay}" tidak ditemukan`);
-                    const arr = updated[kat][lay];
-                    const idx = arr.findIndex(v => v.n === vrn);
-                    if (idx === -1) throw new Error(`Varian "${vrn}" tidak ditemukan di ${lay}`);
-                    const oldP = arr[idx].p;
-                    arr[idx].p = hi;
-                    await ghPutJson(JSON_PATH, updated, `Edit harga ${kat}/${lay}/${vrn}: ${oldP} → ${hi} via Telegram`);
-                    dbProduk = updated;
-                    await sendBotMsg(STATUS_BOT_TOKEN, chatId, `✅ Harga <b>${escapeHtml(vrn)}</b> di ${escapeHtml(lay)} berhasil diubah:\nRp${oldP.toLocaleString('id-ID')} → <b>Rp${hi.toLocaleString('id-ID')}</b>`);
-                } catch(e) {
-                    await sendBotMsg(STATUS_BOT_TOKEN, chatId, `❌ Gagal edit: ${e.message}`);
-                }
-                return;
+    // /tambah Kategori\nLayanan | Varian | Harga
+    if (text.startsWith('/tambah')) {
+        if (!GITHUB_PAT) { await sendBotMsg(STATUS_BOT_TOKEN, chatId, `❌ <b>GITHUB_PAT belum diset</b> di kode index.html.`); return; }
+        try {
+            const lines = text.split('\n');
+            const kat = lines[0].substring('/tambah'.length).trim();
+            if (!kat) throw new Error('Kategori kosong. Format:\n/tambah Kategori\nLayanan | Varian | Harga');
+            const items = lines.slice(1).map(l => l.split('|').map(s=>s.trim())).filter(p => p.length === 3 && p[0] && p[1] && p[2]);
+            if (items.length === 0) throw new Error('Tidak ada baris valid. Tiap baris: Layanan | Varian | Harga');
+            await fetchProduk();
+            const updated = JSON.parse(JSON.stringify(dbProduk));
+            if (!updated[kat]) updated[kat] = {};
+            let added = 0;
+            for (const [lay, vrn, hrg] of items) {
+                const hi = parseInt((hrg||'').replace(/[^\d]/g,''));
+                if (isNaN(hi)) continue;
+                if (!updated[kat][lay]) updated[kat][lay] = [];
+                updated[kat][lay].push({ n: vrn, p: hi });
+                added++;
             }
+            if (added === 0) throw new Error('Tidak ada item valid (cek harga harus angka)');
+            await ghPutJson(JSON_PATH, updated, `Tambah ${added} produk ke ${kat} via Telegram`);
+            dbProduk = updated;
+            await sendBotMsg(STATUS_BOT_TOKEN, chatId, `✅ <b>${added} produk</b> berhasil ditambahkan ke kategori <b>${escapeHtml(kat)}</b>.`);
+        } catch(e) {
+            await sendBotMsg(STATUS_BOT_TOKEN, chatId, `❌ Gagal tambah: ${e.message}`);
+        }
+        return;
+    }
 
-            // /hapusvarian Kategori | Layanan | Varian
-            if (text.startsWith('/hapusvarian')) {
-                await sendBotMsg(STATUS_BOT_TOKEN, chatId, `📨 HAPUS VARIAN diterima, sedang memproses...`);
-                if (!GITHUB_PAT) { await sendBotMsg(STATUS_BOT_TOKEN, chatId, `❌ GITHUB_PAT belum diset di kode.`); return; }
-                try {
-                    const body = text.substring('/hapusvarian'.length).trim();
-                    const parts = body.split('|').map(s=>s.trim());
-                    if (parts.length !== 3) throw new Error('Format: /hapusvarian Kategori | Layanan | Varian');
-                    const [kat, lay, vrn] = parts;
-                    await fetchProduk();
-                    const updated = JSON.parse(JSON.stringify(dbProduk));
-                    if (!updated[kat] || !updated[kat][lay]) throw new Error(`"${kat} > ${lay}" tidak ditemukan`);
-                    const before = updated[kat][lay].length;
-                    updated[kat][lay] = updated[kat][lay].filter(v => v.n !== vrn);
-                    if (updated[kat][lay].length === before) throw new Error(`Varian "${vrn}" tidak ada`);
-                    await ghPutJson(JSON_PATH, updated, `Hapus varian ${kat}/${lay}/${vrn} via Telegram`);
-                    dbProduk = updated;
-                    await sendBotMsg(STATUS_BOT_TOKEN, chatId, `✅ Varian <b>${escapeHtml(vrn)}</b> berhasil dihapus dari ${escapeHtml(kat)} > ${escapeHtml(lay)}.`);
-                } catch(e) {
-                    await sendBotMsg(STATUS_BOT_TOKEN, chatId, `❌ Gagal hapus varian: ${e.message}`);
-                }
-                return;
-            }
+    // /edit Kategori | Layanan | Varian | HargaBaru
+    if (text.startsWith('/edit ') || text.startsWith('/edit\n')) {
+        if (!GITHUB_PAT) { await sendBotMsg(STATUS_BOT_TOKEN, chatId, `❌ GITHUB_PAT belum diset di kode.`); return; }
+        try {
+            const body = text.substring('/edit'.length).trim();
+            const parts = body.split('|').map(s=>s.trim());
+            if (parts.length !== 4) throw new Error('Format: /edit Kategori | Layanan | Varian | HargaBaru');
+            const [kat, lay, vrn, hrg] = parts;
+            const hi = parseInt(hrg.replace(/[^\d]/g,''));
+            if (isNaN(hi)) throw new Error('Harga baru tidak valid');
+            await fetchProduk();
+            const updated = JSON.parse(JSON.stringify(dbProduk));
+            if (!updated[kat] || !updated[kat][lay]) throw new Error(`"${kat} > ${lay}" tidak ditemukan`);
+            const arr = updated[kat][lay];
+            const idx = arr.findIndex(v => v.n === vrn);
+            if (idx === -1) throw new Error(`Varian "${vrn}" tidak ditemukan di ${lay}`);
+            const oldP = arr[idx].p;
+            arr[idx].p = hi;
+            await ghPutJson(JSON_PATH, updated, `Edit harga ${kat}/${lay}/${vrn}: ${oldP} → ${hi} via Telegram`);
+            dbProduk = updated;
+            await sendBotMsg(STATUS_BOT_TOKEN, chatId, `✅ Harga <b>${escapeHtml(vrn)}</b> di ${escapeHtml(lay)} berhasil diubah:\nRp${oldP.toLocaleString('id-ID')} → <b>Rp${hi.toLocaleString('id-ID')}</b>`);
+        } catch(e) {
+            await sendBotMsg(STATUS_BOT_TOKEN, chatId, `❌ Gagal edit: ${e.message}`);
+        }
+        return;
+    }
 
-            // /hapus Kategori | Layanan (HARUS setelah /hapusvarian)
-            if (text.startsWith('/hapus')) {
-                await sendBotMsg(STATUS_BOT_TOKEN, chatId, `📨 HAPUS LAYANAN diterima, sedang memproses...`);
-                if (!GITHUB_PAT) { await sendBotMsg(STATUS_BOT_TOKEN, chatId, `❌ GITHUB_PAT belum diset di kode.`); return; }
-                try {
-                    const body = text.substring('/hapus'.length).trim();
-                    const parts = body.split('|').map(s=>s.trim());
-                    if (parts.length !== 2) throw new Error('Format: /hapus Kategori | Layanan');
-                    const [kat, lay] = parts;
-                    await fetchProduk();
-                    const updated = JSON.parse(JSON.stringify(dbProduk));
-                    if (!updated[kat] || !updated[kat][lay]) throw new Error(`"${kat} > ${lay}" tidak ditemukan`);
-                    delete updated[kat][lay];
-                    if (Object.keys(updated[kat]).length === 0) delete updated[kat];
-                    await ghPutJson(JSON_PATH, updated, `Hapus layanan ${kat}/${lay} via Telegram`);
-                    dbProduk = updated;
-                    await sendBotMsg(STATUS_BOT_TOKEN, chatId, `✅ Layanan <b>${escapeHtml(lay)}</b> di kategori <b>${escapeHtml(kat)}</b> berhasil dihapus.`);
-                } catch(e) {
-                    await sendBotMsg(STATUS_BOT_TOKEN, chatId, `❌ Gagal hapus: ${e.message}`);
-                }
-                return;
-            }
+    // /hapusvarian Kategori | Layanan | Varian
+    if (text.startsWith('/hapusvarian')) {
+        if (!GITHUB_PAT) { await sendBotMsg(STATUS_BOT_TOKEN, chatId, `❌ GITHUB_PAT belum diset di kode.`); return; }
+        try {
+            const body = text.substring('/hapusvarian'.length).trim();
+            const parts = body.split('|').map(s=>s.trim());
+            if (parts.length !== 3) throw new Error('Format: /hapusvarian Kategori | Layanan | Varian');
+            const [kat, lay, vrn] = parts;
+            await fetchProduk();
+            const updated = JSON.parse(JSON.stringify(dbProduk));
+            if (!updated[kat] || !updated[kat][lay]) throw new Error(`"${kat} > ${lay}" tidak ditemukan`);
+            const before = updated[kat][lay].length;
+            updated[kat][lay] = updated[kat][lay].filter(v => v.n !== vrn);
+            if (updated[kat][lay].length === before) throw new Error(`Varian "${vrn}" tidak ada`);
+            await ghPutJson(JSON_PATH, updated, `Hapus varian ${kat}/${lay}/${vrn} via Telegram`);
+            dbProduk = updated;
+            await sendBotMsg(STATUS_BOT_TOKEN, chatId, `✅ Varian <b>${escapeHtml(vrn)}</b> berhasil dihapus dari ${escapeHtml(kat)} > ${escapeHtml(lay)}.`);
+        } catch(e) {
+            await sendBotMsg(STATUS_BOT_TOKEN, chatId, `❌ Gagal hapus varian: ${e.message}`);
+        }
+        return;
+    }
 
-            // Unknown command
-            if (text.startsWith('/')) {
-                await sendBotMsg(STATUS_BOT_TOKEN, chatId, `❌ Perintah <code>${escapeHtml(text.split(/\s/)[0])}</code> tidak dikenal.\n\n<b>Daftar Perintah Bot Status:</b>\n• <code>/whoami</code> — cek chat ID\n• <code>/list</code> — list semua produk\n• <code>/tambah Kategori\nLayanan | Varian | Harga</code>\n• <code>/edit Kat | Lay | Var | HargaBaru</code>\n• <code>/hapusvarian Kat | Lay | Var</code>\n• <code>/hapus Kat | Lay</code>\n\n<b>Atau kirim:</b> OPEN / SLOW / CLOSE / PERBAIKAN — ubah status toko.`);
+    // /hapus Kategori | Layanan (HARUS setelah /hapusvarian)
+    if (text.startsWith('/hapus')) {
+        if (!GITHUB_PAT) { await sendBotMsg(STATUS_BOT_TOKEN, chatId, `❌ GITHUB_PAT belum diset di kode.`); return; }
+        try {
+            const body = text.substring('/hapus'.length).trim();
+            const parts = body.split('|').map(s=>s.trim());
+            if (parts.length !== 2) throw new Error('Format: /hapus Kategori | Layanan');
+            const [kat, lay] = parts;
+            await fetchProduk();
+            const updated = JSON.parse(JSON.stringify(dbProduk));
+            if (!updated[kat] || !updated[kat][lay]) throw new Error(`"${kat} > ${lay}" tidak ditemukan`);
+            delete updated[kat][lay];
+            if (Object.keys(updated[kat]).length === 0) delete updated[kat];
+            await ghPutJson(JSON_PATH, updated, `Hapus layanan ${kat}/${lay} via Telegram`);
+            dbProduk = updated;
+            await sendBotMsg(STATUS_BOT_TOKEN, chatId, `✅ Layanan <b>${escapeHtml(lay)}</b> di kategori <b>${escapeHtml(kat)}</b> berhasil dihapus.`);
+        } catch(e) {
+            await sendBotMsg(STATUS_BOT_TOKEN, chatId, `❌ Gagal hapus: ${e.message}`);
+        }
+        return;
+    }
+
+    // Unknown command
+    if (text.startsWith('/')) {
+        await sendBotMsg(STATUS_BOT_TOKEN, chatId, `❌ Perintah <code>${escapeHtml(text.split(/\s/)[0])}</code> tidak dikenal.\n\n<b>Daftar Perintah Bot Status:</b>\n• <code>/whoami</code> — cek chat ID\n• <code>/list</code> — list semua produk\n• <code>/tambah Kategori\nLayanan | Varian | Harga</code>\n• <code>/edit Kat | Lay | Var | HargaBaru</code>\n• <code>/hapusvarian Kat | Lay | Var</code>\n• <code>/hapus Kat | Lay</code>\n\n<b>Atau kirim:</b> OPEN / SLOW / CLOSE / PERBAIKAN — ubah status toko.`);
+    }
+}
+
+// ============ MAIN SYNC LOOP (Diedit Anti-Spam & Anti-Overlapping) ============
+let isSyncing = false; // Pengunci sirkuit agar interval tidak tumpang tindih
+
+async function syncData() {
+    if (isSyncing) return; // Jika proses sinkronisasi sebelumnya belum kelar, batalkan loop detik ini.
+    isSyncing = true;
+
+    try {
+        // ORDER BOT
+        const resO = await fetch(`https://api.telegram.org/bot${ORDER_BOT}/getUpdates?offset=${lastOrderUpdate + 1}&limit=5&timeout=5`);
+        const dataO = await resO.json();
+        if (dataO.result && dataO.result.length > 0) {
+            for (const u of dataO.result) {
+                lastOrderUpdate = u.update_id;
+                localStorage.setItem('last_o_id', lastOrderUpdate);
+                // Jalankan di latar belakang (tanpa await), agar offset Telegram langsung maju maju maju
+                handleOrderBotUpdate(u).catch(e => console.error(e));
             }
         }
+    } catch(e) {}
 
-        // ============ MAIN SYNC LOOP ============
-        async function syncData() {
-            try {
-                // ORDER BOT
-                const resO = await fetch(`https://api.telegram.org/bot${ORDER_BOT}/getUpdates?offset=${lastOrderUpdate + 1}&limit=5&timeout=25`);
-                const dataO = await resO.json();
-                if (dataO.result && dataO.result.length > 0) {
-                    for (const u of dataO.result) {
-                        lastOrderUpdate = u.update_id;
-                        localStorage.setItem('last_o_id', lastOrderUpdate);
-                        await handleOrderBotUpdate(u);
-                    }
-                }
-            } catch(e) {}
-            try {
-                // TICKET BOT
-                const resT = await fetch(`https://api.telegram.org/bot${TICKET_BOT}/getUpdates?offset=${lastTicketUpdate + 1}&limit=10`);
-                const dataT = await resT.json();
-                if (dataT.result && dataT.result.length > 0) {
-                    for (const u of dataT.result) {
-                        lastTicketUpdate = u.update_id;
-                        localStorage.setItem('last_t_id', lastTicketUpdate);
-                        await handleTicketBotUpdate(u);
-                    }
-                }
-            } catch(e) {}
-            try {
-                // STATUS BOT (commands)
-                const resS = await fetch(`https://api.telegram.org/bot${STATUS_BOT_TOKEN}/getUpdates?offset=${lastStatusUpdate + 1}&limit=5`);
-                const dataS = await resS.json();
-                if (dataS.result && dataS.result.length > 0) {
-                    for (const u of dataS.result) {
-                        lastStatusUpdate = u.update_id;
-                        localStorage.setItem('last_s_id', lastStatusUpdate);
-                        await handleStatusBotUpdate(u);
-                    }
-                }
-            } catch(e) {}
+    try {
+        // TICKET BOT
+        const resT = await fetch(`https://api.telegram.org/bot${TICKET_BOT}/getUpdates?offset=${lastTicketUpdate + 1}&limit=10`);
+        const dataT = await resT.json();
+        if (dataT.result && dataT.result.length > 0) {
+            for (const u of dataT.result) {
+                lastTicketUpdate = u.update_id;
+                localStorage.setItem('last_t_id', lastTicketUpdate);
+                handleTicketBotUpdate(u).catch(e => console.error(e));
+            }
         }
-        setInterval(syncData, 1500);
+    } catch(e) {}
+
+    try {
+        // STATUS BOT (commands)
+        const resS = await fetch(`https://api.telegram.org/bot${STATUS_BOT_TOKEN}/getUpdates?offset=${lastStatusUpdate + 1}&limit=5`);
+        const dataS = await resS.json();
+        if (dataS.result && dataS.result.length > 0) {
+            for (const u of dataS.result) {
+                // LANGSUNG KUNCI DI SINI: Update ID lokal diset terlebih dahulu sebelum fungsi berat berjalan
+                lastStatusUpdate = u.update_id;
+                localStorage.setItem('last_s_id', lastStatusUpdate);
+                // Jalankan tanpa await, membebaskan antrean request Telegram berikutnya
+                handleStatusBotUpdate(u).catch(e => console.error(e));
+            }
+        }
+    } catch(e) {}
+
+    isSyncing = false; // Buka kembali gerbang sinkronisasi setelah siklus beres
+}
+
+// Interval diubah ke 3000ms (3 detik) agar lebih ramah browser & menghindari hit rate-limit Telegram
+setInterval(syncData, 3000);
 
         // ============ PRODUCTS / FORM ============
         function openProduct(type) {

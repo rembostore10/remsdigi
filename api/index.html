@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RemsDigi - Marketplace Digital Premium</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .theme-dark { background-color: #0f172a; color: #f8fafc; }
+        .theme-light { background-color: #f8fafc; color: #0f172a; }
+    </style>
+</head>
+<body class="theme-light transition-colors duration-300 min-h-screen flex flex-col">
+
+    <!-- LOADING SCREEN -->
+    <div id="loading-screen" class="fixed inset-0 z-50 bg-slate-900 flex flex-col items-center justify-center transition-opacity duration-500">
+        <div class="w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <h2 class="text-white text-2xl font-extrabold tracking-wider animate-pulse">Rems<span class="text-purple-400">Digi</span></h2>
+    </div>
+
+    <!-- NAVBAR -->
+    <nav class="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200 shadow-sm transition-colors duration-300" id="navbar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16 gap-4">
+                <div class="flex-shrink-0 cursor-pointer" onclick="switchPage('home')">
+                    <span class="text-2xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">RemsDigi</span>
+                </div>
+                <div class="flex-1 max-w-lg relative hidden sm:block">
+                    <input type="text" placeholder="Cari aplikasi premium, top up game..." class="w-full bg-slate-100 border-0 rounded-xl pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-purple-500 transition-all text-slate-800">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-sm"></i>
+                </div>
+                <div class="flex items-center gap-4">
+                    <button onclick="toggleTheme()" class="p-2 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 transition">
+                        <i class="fa-solid fa-moon" id="theme-icon"></i>
+                    </button>
+                    <div id="nav-auth-section">
+                        <button onclick="switchPage('auth')" class="bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold text-sm px-5 py-2.5 rounded-xl shadow-lg shadow-purple-500/20 hover:opacity-90 transition">Masuk / Daftar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- HOME PAGE -->
+        <section id="page-home" class="space-y-10">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2 relative bg-gradient-to-br from-blue-700 to-purple-800 rounded-2xl p-8 text-white overflow-hidden shadow-xl min-h-[220px] flex flex-col justify-center">
+                    <div class="relative z-10">
+                        <span class="bg-white/20 text-xs px-3 py-1 rounded-full font-bold uppercase tracking-wider">Promo Spesial</span>
+                        <h1 class="text-2xl sm:text-4xl font-extrabold mt-3 leading-tight">Diskon Hingga 70%<br>Untuk Semua Aplikasi Premium</h1>
+                    </div>
+                </div>
+                <!-- Balance Card -->
+                <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col justify-between text-slate-800">
+                    <div>
+                        <div class="flex justify-between items-center mb-4">
+                            <span class="text-sm font-medium text-slate-500">Saldo Akun Anda</span>
+                            <span class="bg-blue-50 text-blue-600 font-bold text-xs px-2.5 py-1 rounded-full"><i class="fa-solid fa-wallet mr-1"></i>RemsPay</span>
+                        </div>
+                        <h2 class="text-3xl font-black tracking-tight mb-1 text-slate-900" id="display-user-saldo">Rp 0</h2>
+                        <p class="text-xs text-slate-400">UID: <span id="display-user-uid">REMS-7712</span></p>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 mt-6">
+                        <button onclick="switchPage('deposit')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm py-3 rounded-xl transition flex items-center justify-center gap-2"><i class="fa-solid fa-circle-plus"></i> Top Up Saldo</button>
+                        <button onclick="switchPage('dashboard')" class="bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-sm py-3 rounded-xl transition flex items-center justify-center gap-2"><i class="fa-solid fa-clock-rotate-left"></i> Riwayat</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Products List -->
+            <div>
+                <h3 class="text-xl font-extrabold tracking-tight mb-6">Produk Pilihan RemsDigi</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6" id="products-container"></div>
+            </div>
+        </section>
+
+        <!-- CHECKOUT PAGE -->
+        <section id="page-checkout" class="hidden max-w-3xl mx-auto bg-white border border-slate-200 rounded-2xl p-6 shadow-sm text-slate-800">
+            <button onclick="switchPage('home')" class="text-slate-400 hover:text-slate-600 mb-4 inline-flex items-center gap-2 text-sm font-medium"><i class="fa-solid fa-arrow-left"></i> Kembali</button>
+            <div id="checkout-details" class="space-y-6"></div>
+        </section>
+
+        <!-- DEPOSIT PAGE -->
+        <section id="page-deposit" class="hidden max-w-md mx-auto bg-white border border-slate-200 rounded-2xl p-6 shadow-sm text-slate-800">
+            <h2 class="text-xl font-extrabold mb-4 text-slate-900"><i class="fa-solid fa-circle-plus text-blue-600 mr-2"></i>Top Up Saldo</h2>
+            <form id="deposit-form" class="space-y-4" onsubmit="handleDepositSubmit(event)">
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Jumlah Top Up (Rp)</label>
+                    <input type="number" id="deposit-amount" required min="10000" placeholder="Minimal Rp 10.000" class="w-full border border-slate-200 rounded-xl px-4 py-3 font-bold">
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl shadow-lg hover:opacity-90">Dapatkan Invoice QRIS</button>
+            </form>
+            
+            <div id="deposit-invoice" class="hidden mt-6 pt-6 border-t border-slate-100 space-y-4 text-center">
+                <p class="text-xs text-slate-500">Scan QRIS di bawah ini, lalu tunggu Admin melakukan konfirmasi nominal saldo Anda:</p>
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=RemsDigiDeposit" alt="QRIS" class="mx-auto w-48 h-48 border p-2 bg-white rounded-xl">
+                <div class="text-left space-y-3">
+                    <label class="block text-xs font-bold uppercase text-slate-500">Upload Bukti Transfer</label>
+                    <input type="file" id="deposit-proof" accept="image/*" required class="w-full text-xs text-slate-500">
+                    <button onclick="confirmDepositPayment()" class="w-full bg-emerald-600 text-white font-bold py-3 rounded-xl">Kirim Bukti ke Admin</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- DASHBOARD -->
+        <section id="page-dashboard" class="hidden space-y-6 text-slate-800">
+            <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                <h3 class="font-bold text-md text-slate-900 mb-4 pb-2 border-b"><i class="fa-solid fa-clock-rotate-left mr-2 text-purple-600"></i>Riwayat Transaksi</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead>
+                            <tr class="text-slate-400 uppercase text-[10px] border-b">
+                                <th class="py-3">Produk / ID</th>
+                                <th class="py-3">Harga</th>
+                                <th class="py-3">Metode</th>
+                                <th class="py-3">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="user-orders-table" class="divide-y divide-slate-50"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        const TELEGRAM_BOT_TOKEN = '8653920922:AAGa5rFKNhwL4cyO2w8X1oAEyyLO-QuL3W8'; 
+        const TELEGRAM_CHAT_ID = '6161828437'; 
+
+        let appState = {
+            user: { uid: "REMS-7712", email: "user@remsdigi.com", saldo: 0 },
+            orders: []
+        };
+
+        const productsData = [
+            { id: 1, name: 'Netflix Premium UHD', category: 'apps', price: 35000, icon: 'fa-netflix', desc: 'Akun Premium Shared 1 Bulan Full Garansi.' },
+            { id: 2, name: 'Spotify Premium 1 Bulan', category: 'apps', price: 15000, icon: 'fa-spotify', desc: 'Premium akun individu resmi.' }
+        ];
+
+        window.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('loading-screen').remove();
+            renderProducts();
+            updateUIState();
+        });
+
+        function updateUIState() {
+            document.getElementById('display-user-saldo').innerText = `Rp ${appState.user.saldo.toLocaleString('id-ID')}`;
+            const ordersTable = document.getElementById('user-orders-table');
+            ordersTable.innerHTML = appState.orders.map(o => `
+                <tr class="text-xs">
+                    <td class="py-3 font-bold">${o.product}<br><span class="text-slate-400">${o.id}</span></td>
+                    <td class="py-3">Rp ${o.price.toLocaleString('id-ID')}</td>
+                    <td class="py-3"><span class="bg-slate-100 px-2 py-0.5 rounded">${o.method}</span></td>
+                    <td class="py-3"><span class="${o.status === 'Selesai' ? 'text-emerald-600' : o.status === 'Gagal' ? 'text-red-600' : 'text-amber-600'} font-bold">${o.status}</span></td>
+                </tr>
+            `).join('');
+        }
+
+        function renderProducts() {
+            const container = document.getElementById('products-container');
+            container.innerHTML = productsData.map(p => `
+                <div class="bg-white border rounded-2xl p-4 flex flex-col justify-between text-slate-800">
+                    <div>
+                        <h4 class="font-bold text-sm">${p.name}</h4>
+                        <p class="text-[11px] text-slate-400">${p.desc}</p>
+                    </div>
+                    <div class="mt-4 pt-3 border-t flex items-center justify-between">
+                        <span class="text-sm font-black text-purple-600">Rp ${p.price.toLocaleString('id-ID')}</span>
+                        <button onclick="openCheckout(${p.id})" class="bg-slate-900 text-white rounded-lg px-3 py-1.5 text-xs font-bold">Beli</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function switchPage(pageId) {
+            ['home', 'checkout', 'deposit', 'dashboard'].forEach(p => document.getElementById(`page-${p}`).classList.add('hidden'));
+            document.getElementById(`page-${pageId}`).classList.remove('hidden');
+        }
+
+        function openCheckout(productId) {
+            const product = productsData.find(p => p.id === productId);
+            switchPage('checkout');
+            document.getElementById('checkout-details').innerHTML = `
+                <h3 class="text-lg font-black">${product.name}</h3>
+                <p class="text-sm text-purple-600 font-bold">Rp ${product.price.toLocaleString('id-ID')}</p>
+                <div class="space-y-2">
+                    <label class="flex items-center gap-3 p-3 border rounded-xl"><input type="radio" name="pay-method" value="qris" checked onchange="toggleMethodFields('qris')"> QRIS Otomatis</label>
+                    <label class="flex items-center gap-3 p-3 border rounded-xl"><input type="radio" name="pay-method" value="transfer" onchange="toggleMethodFields('transfer')"> Transfer Dana / GoPay (Manual)</label>
+                    <label class="flex items-center gap-3 p-3 border rounded-xl"><input type="radio" name="pay-method" value="saldo" onchange="toggleMethodFields('saldo')"> Potong Saldo RemsPay</label>
+                </div>
+                <div id="checkout-qris-area" class="text-center"><img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=RemsDigiPay" class="mx-auto border p-2 bg-white rounded-xl"></div>
+                <div id="checkout-transfer-area" class="hidden bg-purple-50 p-4 rounded-xl text-xs"><strong>Transfer ke No: 083844641151 A/n Ramadhani</strong></div>
+                <div><input type="file" id="product-pay-proof" accept="image/*" class="text-xs"></div>
+                <button onclick="executeProductOrder('${product.name}', ${product.price})" class="w-full bg-blue-600 text-white font-extrabold py-3 rounded-xl">Bayar & Kirim Pesanan</button>
+            `;
+        }
+
+        function toggleMethodFields(method) {
+            document.getElementById('checkout-qris-area').classList.toggle('hidden', method !== 'qris');
+            document.getElementById('checkout-transfer-area').classList.toggle('hidden', method !== 'transfer');
+        }
+
+        function executeProductOrder(pName, pPrice) {
+            const method = document.querySelector('input[name="pay-method"]:checked').value;
+            if (method === 'saldo' && appState.user.saldo < pPrice) return alert("Saldo tidak cukup!");
+            if (method === 'saldo') appState.user.saldo -= pPrice;
+
+            const orderId = "ORD-" + Math.floor(10000 + Math.random() * 90000);
+            appState.orders.unshift({ id: orderId, product: pName, price: pPrice, method: method, status: "Proses" });
+            updateUIState();
+
+            // SCRIPT TOMBOL AKSI TELEGRAM (INLINE KEYBOARD CORRECTION)
+            const message = `🔔 *PESANAN BARU MASUK*\n\nID: \`${orderId}\`\nLayanan: *${pName}*\nHarga: Rp ${pPrice.toLocaleString('id-ID')}\nMetode: ${method.toUpperCase()}\nUID Pembeli: \`${appState.user.uid}\``;
+            
+            const keyboard = {
+                inline_keyboard: [[
+                    { text: "✅ Selesai", callback_data: `selesai_${orderId}` },
+                    { text: "❌ Gagal", callback_data: `gagal_${orderId}` }
+                ]]
+            };
+
+            fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: message, parse_mode: 'Markdown', reply_markup: keyboard })
+            });
+
+            alert("Pesanan dikirim ke Telegram Admin untuk divalidasi!");
+            switchPage('dashboard');
+        }
+
+        function handleDepositSubmit(e) { e.preventDefault(); document.getElementById('deposit-invoice').classList.remove('hidden'); }
+
+        function confirmDepositPayment() {
+            const amount = parseInt(document.getElementById('deposit-amount').value);
+            const depId = "DEP-" + Math.floor(10000 + Math.random() * 90000);
+            
+            appState.orders.unshift({ id: depId, product: 'Top Up Saldo', price: amount, method: 'QRIS', status: 'Proses' });
+            updateUIState();
+
+            // Notifikasi request deposit ke admin di bot telegram tanpa langsung menambah saldo
+            const msg = `💰 *PERMINTAAN DEPOSIT SALDO*\n\nID: \`${depId}\`\nUID User: \`${appState.user.uid}\`\nNominal yang diminta: *Rp ${amount.toLocaleString('id-ID')}*\n\n👉 *Cara Isi Saldo:* Balas/Ketik pesan di bot ini dengan format:\n\n\`/topup ${appState.user.uid} ${amount}\``;
+            
+            fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: msg, parse_mode: 'Markdown' })
+            });
+
+            alert("Bukti transfer terkirim. Saldo akan masuk setelah dikonfirmasi & diinput oleh Admin di Telegram!");
+            switchPage('dashboard');
+        }
+    </script>
+</body>
+</html>

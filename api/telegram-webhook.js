@@ -2,8 +2,8 @@
 import { createClient } from '@supabase/supabase-js';
 
 // Ganti dengan URL dan Service Role Key / Anon Key Supabase Anda
-const SUPABASE_URL = 'https://your-supabase-project.supabase.co';
-const SUPABASE_KEY = 'your-supabase-anon-or-service-key';
+const SUPABASE_URL = 'https://fnwpyxtjdvriaiansowz.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZud3B5eHRqZHZyaWFpYW5zb3d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzNDAyMTEsImV4cCI6MjA5NzkxNjIxMX0.VSFuCNdmHyIcTYk2a6VCsAAnmwyJ1cBfWjo1l9CqxZk';
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const TELEGRAM_BOT_TOKEN = '8653920922:AAGa5rFKNhwL4cyO2w8X1oAEyyLO-QuL3W8';

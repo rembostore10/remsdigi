@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Remsdigi - SMM Panel Dashboard</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Supabase JS Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-[#111827] text-gray-100 min-h-screen">
+
+    <!-- ================= HALAMAN LOGIN ================= -->
+    <div id="page-login" class="min-h-screen flex items-center justify-center p-4">
+        <div class="bg-[#1f2937] border border-gray-700 w-full max-w-md rounded-2xl shadow-xl p-8">
+            <div class="text-center mb-8">
+                <div class="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center font-bold text-white tracking-wider text-xl mx-auto mb-3 shadow-lg shadow-blue-600/20">R</div>
+                <h2 class="text-2xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent uppercase tracking-wider">Remsdigi</h2>
+                <p class="text-gray-400 text-xs mt-1">Silakan masuk untuk mengelola pesanan Anda</p>
+            </div>
+            
+            <form id="form-login" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Email</label>
+                    <input type="email" id="login-email" required placeholder="email@contoh.com" class="w-full bg-gray-800 border border-gray-700 rounded-xl py-3 px-4 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-blue-500 transition">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Password</label>
+                    <input type="password" id="login-password" required placeholder="••••••••" class="w-full bg-gray-800 border border-gray-700 rounded-xl py-3 px-4 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-blue-500 transition">
+                </div>
+                <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-semibold text-sm py-3.5 rounded-xl transition shadow-lg shadow-blue-600/20">
+                    Masuk dengan Email
+                </button>
+            </form>
+
+            <div class="relative flex py-4 items-center">
+                <div class="flex-grow border-t border-gray-700"></div>
+                <span class="flex-shrink mx-4 text-gray-500 text-xs uppercase">Atau</span>
+                <div class="flex-grow border-t border-gray-700"></div>
+            </div>
+
+            <!-- Google Login Button -->
+            <button id="btn-google-login" class="w-full bg-gray-800 hover:bg-gray-700 border border-gray-700 text-white font-semibold text-sm py-3 rounded-xl transition flex items-center justify-center gap-3">
+                <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5" alt="Google Logo">
+                Masuk dengan Google
+            </button>
+        </div>
+    </div>
+
+    <!-- ================= MAIN PANEL LAYER ================= -->
+    <div id="main-panel" class="hidden min-h-screen flex flex-col md:flex-row">
+        
+        <!-- SIDEBAR NAVIGASI -->
+        <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-[#1f2937] border-r border-gray-700 transform -translate-x-full transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:h-screen flex flex-col justify-between">
+            <div>
+                <div class="h-16 flex items-center justify-between px-6 border-b border-gray-700">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center font-bold text-white text-sm">R</div>
+                        <span class="text-lg font-bold tracking-wider bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">REMSDIGI</span>
+                    </div>
+                    <button onclick="toggleSidebar()" class="md:hidden text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+                </div>
+
+                <nav class="p-4 space-y-1">
+                    <button onclick="switchPage('dashboard')" id="nav-dashboard" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-gray-800 rounded-xl transition duration-200">
+                        <i class="fa-solid fa-chart-pie w-5 text-left"></i><span class="text-sm font-medium">Dashboard</span>
+                    </button>
+                    <button onclick="switchPage('pemesanan')" id="nav-pemesanan" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-gray-800 rounded-xl transition duration-200">
+                        <i class="fa-solid fa-cart-plus w-5 text-left"></i><span class="text-sm font-medium">Pemesanan Baru</span>
+                    </button>
+                    <button onclick="switchPage('riwayat')" id="nav-riwayat" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-gray-800 rounded-xl transition duration-200">
+                        <i class="fa-solid fa-history w-5 text-left"></i><span class="text-sm font-medium">Riwayat Pesanan</span>
+                    </button>
+                    <button onclick="switchPage('saldo')" id="nav-saldo" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-gray-800 rounded-xl transition duration-200">
+                        <i class="fa-solid fa-wallet w-5 text-left"></i><span class="text-sm font-medium">Isi Saldo</span>
+                    </button>
+                    <button onclick="switchPage('kontak')" id="nav-kontak" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-gray-800 rounded-xl transition duration-200">
+                        <i class="fa-solid fa-headset w-5 text-left"></i><span class="text-sm font-medium">Kontak Kami</span>
+                    </button>
+                </nav>
+            </div>
+
+            <div class="p-4 border-t border-gray-700 bg-[#1a2232] flex items-center justify-between">
+                <div class="flex items-center gap-2 overflow-hidden">
+                    <div id="user-avatar" class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-xs font-semibold text-white">U</div>
+                    <div class="overflow-hidden"><p id="user-email-display" class="text-xs font-semibold text-gray-200 truncate">Loading...</p></div>
+                </div>
+                <button id="btn-logout" class="text-gray-400 hover:text-red-400 transition p-2" title="Keluar"><i class="fa-solid fa-right-from-bracket"></i></button>
+            </div>
+        </aside>
+
+        <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 z-40 bg-black/50 hidden md:hidden"></div>
+
+        <!-- MAIN CONTENT AREA -->
+        <div class="flex-1 flex flex-col min-w-0">
+            <!-- HEADER -->
+            <header class="h-16 bg-[#1f2937] border-b border-gray-700 flex items-center justify-between px-4 sm:px-6 lg:px-8">
+                <button onclick="toggleSidebar()" class="md:hidden text-gray-400 hover:text-white p-2 rounded-lg hover:bg-gray-800"><i class="fa-solid fa-bars text-xl"></i></button>
+                <div class="flex items-center gap-4 ml-auto">
+                    <div class="bg-gray-800 border border-gray-700 rounded-2xl py-1.5 px-4 flex items-center gap-3 shadow-inner">
+                        <div class="w-7 h-7 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-400"><i class="fa-solid fa-wallet text-xs"></i></div>
+                        <div>
+                            <p class="text-[10px] text-gray-400 leading-none">Saldo Anda</p>
+                            <p id="user-balance" class="text-sm font-bold text-emerald-400 mt-0.5">Rp 0</p>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- DYNAMIC PANELS -->
+            <main class="flex-1 p-4 sm:p-6 lg:p-8 max-w-4xl w-full mx-auto">
+                
+                <!-- CONTENT: DASHBOARD -->
+                <section id="content-dashboard" class="page-content space-y-6">
+                    <div>
+                        <h1 class="text-2xl font-bold text-white tracking-tight">Dashboard Ringkasan</h1>
+                        <p class="text-sm text-gray-400 mt-1">Pantau statistik performa akun Remsdigi Anda.</p>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div class="bg-[#1f2937] border border-gray-700 p-5 rounded-2xl">
+                            <p class="text-xs font-medium text-gray-400 uppercase">Total Pesanan</p>
+                            <p id="stat-total-orders" class="text-2xl font-bold text-white mt-2">0</p>
+                        </div>
+                        <div class="bg-[#1f2937] border border-gray-700 p-5 rounded-2xl">
+                            <p class="text-xs font-medium text-gray-400 uppercase">Pesanan Proses</p>
+                            <p id="stat-process-orders" class="text-2xl font-bold text-blue-400 mt-2">0</p>
+                        </div>
+                        <div class="bg-[#1f2937] border border-gray-700 p-5 rounded-2xl">
+                            <p class="text-xs font-medium text-gray-400 uppercase">Total Pengeluaran</p>
+                            <p id="stat-total-spent" class="text-2xl font-bold text-emerald-400 mt-2">Rp 0</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- CONTENT: PEMESANAN BARU -->
+                <section id="content-pemesanan" class="page-content hidden space-y-6">
+                    <div>
+                        <h1 class="text-2xl font-bold text-white tracking-tight">Pemesanan Baru</h1>
+                        <p class="text-sm text-gray-400 mt-1">Dapatkan interaksi instan untuk optimasi media sosial Anda.</p>
+                    </div>
+                    <div class="bg-[#1f2937] border border-gray-700 rounded-2xl shadow-xl overflow-hidden">
+                        <form id="form-order" class="p-6 space-y-5">
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Kategori Sosmed</label>
+                                <select id="order-category" class="w-full bg-gray-800 border border-gray-700 rounded-xl py-3 px-4 text-sm text-gray-200 focus:outline-none focus:border-blue-500">
+                                    <option value="tiktok">TikTok Services</option>
+                                    <option value="instagram">Instagram Services</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Layanan</label>
+                                <select id="layanan" class="w-full bg-gray-800 border border-gray-700 rounded-xl py-3 px-4 text-sm text-gray-200 focus:outline-none focus:border-blue-500">
+                                    <!-- Options injected by app.js -->
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Link / Target</label>
+                                <input type="text" id="order-target" required placeholder="https://..." class="w-full bg-gray-800 border border-gray-700 rounded-xl py-3 px-4 text-sm text-gray-200 focus:outline-none focus:border-blue-500">
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Jumlah (Qty)</label>
+                                    <input type="number" id="jumlah" required min="1" placeholder="Masukkan jumlah..." class="w-full bg-gray-800 border border-gray-700 rounded-xl py-3 px-4 text-sm text-gray-200 focus:outline-none focus:border-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Total Harga</label>
+                                    <div class="bg-gray-800 border border-dashed border-gray-700 rounded-xl py-3 px-4 flex items-center justify-between h-[46px]">
+                                        <span class="text-xs text-gray-400">Estimasi Biaya</span>
+                                        <span id="total-harga" class="text-base font-bold text-cyan-400">Rp 0</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-semibold text-sm py-3.5 rounded-xl shadow-lg shadow-blue-600/20">Submit Pesanan</button>
+                        </form>
+                    </div>
+                </section>
+
+                <!-- CONTENT: RIWAYAT PESANAN -->
+                <section id="content-riwayat" class="page-content hidden space-y-6">
+                    <div>
+                        <h1 class="text-2xl font-bold text-white tracking-tight">Riwayat Pesanan</h1>
+                        <p class="text-sm text-gray-400 mt-1">Pantau seluruh status log transaksi pesanan Anda.</p>
+                    </div>
+                    <div class="bg-[#1f2937] border border-gray-700 rounded-2xl overflow-hidden shadow-xl">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-sm text-gray-300">
+                                <thead class="bg-[#1a2232] text-xs text-gray-400 uppercase tracking-wider border-b border-gray-700">
+                                    <tr>
+                                        <th class="px-6 py-4">ID</th>
+                                        <th class="px-6 py-4">Layanan</th>
+                                        <th class="px-6 py-4">Jumlah</th>
+                                        <th class="px-6 py-4">Harga</th>
+                                        <th class="px-6 py-4">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-history-body" class="divide-y divide-gray-700">
+                                    <!-- Data injected by app.js -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- CONTENT: ISI SALDO -->
+                <section id="content-saldo" class="page-content hidden space-y-6">
+                    <!-- Statis deposit form -->
+                    <div><h1 class="text-2xl font-bold text-white">Isi Saldo / Deposit</h1></div>
+                    <div class="bg-[#1f2937] border border-gray-700 rounded-2xl p-6 max-w-xl">
+                        <form class="space-y-4" onsubmit="event.preventDefault(); alert('Deposit Sukses');">
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-400 mb-2">Metode Pembayaran</label>
+                                <select class="w-full bg-gray-800 border border-gray-700 rounded-xl py-3 px-4 text-sm text-gray-200"><option>QRIS Instan</option></select>
+                            </div>
+                            <button class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold text-sm py-3.5 rounded-xl shadow-lg">Konfirmasi Deposit</button>
+                        </form>
+                    </div>
+                </section>
+
+                <!-- CONTENT: KONTAK KAMI -->
+                <section id="content-kontak" class="page-content hidden space-y-6">
+                    <div><h1 class="text-2xl font-bold text-white">Hubungi Kami</h1></div>
+                    <div class="bg-[#1f2937] border border-gray-700 p-6 rounded-2xl space-y-4 max-w-md">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-blue-600/10 text-blue-400 flex items-center justify-center"><i class="fa-brands fa-telegram text-lg"></i></div>
+                            <div><p class="text-xs text-gray-400">Telegram Admin</p><p class="text-sm font-semibold text-gray-200">@rowmo1</p></div>
+                        </div>
+                    </div>
+                </section>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- Application Script Logic Modules -->
+    <script src="supabase-config.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

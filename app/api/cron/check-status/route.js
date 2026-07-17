@@ -2,22 +2,32 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-// Inisialisasi Supabase menggunakan Environment Variables demi keamanan
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_ANON_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 export async function GET(request) {
-  // 1. Validasi Keamanan (Opsional tapi sangat disarankan untuk Vercel Cron)
-  // Memastikan bahwa yang menembak endpoint ini hanya sistem Cron resmi, bukan orang iseng
+  // 1. Validasi Keamanan untuk Vercel Cron
   const authHeader = request.headers.get('authorization');
   if (process.env.NODE_ENV === 'production' && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
   }
 
   try {
-    // 2. Ambil pesanan dari database lokal yang statusnya masih menggantung ('Pending' atau 'Processing')
-    // dan pastikan kolom provider_order_id tidak kosong
+    // 2. Ambil API Key Provider dari tabel pengaturan di database
+    const { data: configData, error: configError } = await supabase
+      .from('pengaturan')
+      .select('key_value')
+      .eq('key_name', 'provider_api_key')
+      .single();
+
+    if (configError || !configData) {
+      throw new Error(`Gagal mengambil API Key dari database: ${configError?.message || 'Data tidak ditemukan'}`);
+    }
+
+    const apiKeyPusat = configData.key_value;
+
+    // 3. Ambil pesanan yang statusnya 'Pending' atau 'Processing'
     const { data: pesananMenggantung, error: dbError } = await supabase
       .from('pesanan')
       .select('id, provider_order_id')
@@ -28,20 +38,18 @@ export async function GET(request) {
       throw new Error(`Database Error: ${dbError.message}`);
     }
 
-    // Jika tidak ada pesanan yang perlu diperiksa, hentikan proses lebih awal
     if (!pesananMenggantung || pesananMenggantung.length === 0) {
-      return NextResponse.json({ success: true, message: 'Tidak ada pesanan yang perlu diproses.' });
+      return NextResponse.json({ success: true, message: 'Tidak ada pesanan yang perlu diperiksa.' });
     }
 
     const providerUrl = 'https://api-provider-pusat.com/v2';
-    const apiKey = process.env.PROVIDER_API_KEY; 
     let totalDiperbarui = 0;
 
-    // 3. Iterasi setiap pesanan untuk mengecek statusnya satu per satu ke API Provider Pusat
+    // 4. Loping untuk cek status ke provider menggunakan API Key dari database
     for (const order of pesananMenggantung) {
       try {
         const payload = new URLSearchParams({
-          key: apiKey,
+          key: apiKeyPusat, // Menggunakan key hasil query dari database
           action: 'status',
           order: order.provider_order_id
         });
@@ -52,7 +60,7 @@ export async function GET(request) {
           body: payload
         });
 
-        if (!response.ok) continue; // Skip jika server provider overload atau return non-200
+        if (!response.ok) continue;
 
         const data = await response.json();
 
@@ -60,7 +68,6 @@ export async function GET(request) {
           let statusBaru = 'Processing';
           let catatanBaru = 'Pesanan sedang diproses oleh provider.';
 
-          // Pemetaan status dari API pusat ke database Remsdigi
           if (data.status === 'Completed' || data.status === 'Success') {
             statusBaru = 'Success';
             catatanBaru = 'Pesanan telah selesai diisi!';
@@ -72,7 +79,7 @@ export async function GET(request) {
             catatanBaru = `Terisi sebagian. Sisa: ${data.remains || 0}`;
           }
 
-          // 4. Update perubahan status ke database Supabase
+          // Update status terbaru ke database
           const { error: updateError } = await supabase
             .from('pesanan')
             .update({ 
@@ -86,7 +93,6 @@ export async function GET(request) {
           }
         }
       } catch (err) {
-        // Log error untuk satu orderan spesifik tanpa menghentikan looping orderan lainnya
         console.error(`Gagal cek status order lokal ID ${order.id}:`, err.message);
         continue;
       }
@@ -94,7 +100,7 @@ export async function GET(request) {
 
     return NextResponse.json({ 
       success: true, 
-      message: `Berhasil memeriksa ${pesananMenggantung.length} pesanan. ${totalDiperbarui} data status diperbarui.` 
+      message: `Berhasil memeriksa ${pesananMenggantung.length} pesanan. ${totalDiperbarui} status diperbarui.` 
     });
 
   } catch (error) {

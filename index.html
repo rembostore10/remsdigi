@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="id" class="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RemsDigi — Marketplace Digital & Top Up Terpercaya</title>
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#4F46E5" />
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brandBlue: '#2563EB',
+            brandPurple: '#7C3AED',
+            darkBg: '#0F172A',
+            darkCard: '#1E293B'
+          },
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- Google Fonts & FontAwesome -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  
+  <!-- Supabase JS SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-darkBg dark:text-slate-100 transition-colors duration-300 font-sans">
+
+  <!-- LOADING SCREEN PREMIUM -->
+  <div id="loading-screen" class="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 text-white transition-opacity duration-500">
+    <div class="relative flex items-center justify-center">
+      <div class="w-20 h-20 border-4 border-white/20 border-t-white rounded-full animate-spin"></div>
+      <i class="fa-solid fa-bolt text-2xl absolute text-amber-300 animate-pulse"></i>
+    </div>
+    <h1 class="mt-4 text-2xl font-extrabold tracking-wider">Rems<span class="text-cyan-300">Digi</span></h1>
+    <p class="text-xs text-blue-100 mt-1">Memuat Marketplace Digital Tercepat...</p>
+  </div>
+
+  <!-- NAVBAR MODERN -->
+  <header class="sticky top-0 z-40 bg-white/90 dark:bg-darkCard/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-700 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16 gap-3">
+        <!-- Logo -->
+        <a href="#" onclick="showSection('home')" class="flex items-center gap-2 shrink-0">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-purple-600 flex items-center justify-center text-white font-bold shadow-lg shadow-blue-500/30">
+            <i class="fa-solid fa-gem"></i>
+          </div>
+          <span class="text-xl font-extrabold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">RemsDigi</span>
+        </a>
+
+        <!-- Search Bar Pintar -->
+        <div class="flex-1 max-w-xl relative">
+          <input type="text" id="search-input" onkeyup="filterProducts()" placeholder="Cari Netflix, Followers TikTok, MLBB, Pulsa..." 
+            class="w-full pl-10 pr-4 py-2 rounded-full bg-slate-100 dark:bg-slate-800 border border-transparent focus:border-purple-500 focus:bg-white dark:focus:bg-slate-900 text-sm outline-none transition" />
+          <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-2.5 text-slate-400 text-sm"></i>
+        </div>
+
+        <!-- Action Icons -->
+        <div class="flex items-center gap-2 sm:gap-3">
+          <!-- Dark Mode Toggle -->
+          <button onclick="toggleDarkMode()" class="w-9 h-9 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-amber-400 hover:scale-105 transition">
+            <i id="theme-icon" class="fa-solid fa-moon"></i>
+          </button>
+
+          <!-- Saldo Rems Pill (Muncul saat Login) -->
+          <button id="nav-balance-btn" onclick="openDepositModal()" class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-blue-600/10 to-purple-600/10 border border-purple-500/30 text-xs font-bold text-purple-700 dark:text-purple-300 hover:bg-purple-600/20 transition">
+            <i class="fa-solid fa-wallet text-blue-600"></i>
+            <span id="nav-balance-text">Rp 0</span>
+            <span class="bg-purple-600 text-white px-1.5 py-0.5 rounded-full text-[10px]">+ Topup</span>
+          </button>
+
+          <!-- Auth / User Menu -->
+          <div id="auth-buttons">
+            <button onclick="openAuthModal()" class="px-4 py-2 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 text-white text-xs sm:text-sm font-semibold shadow-md shadow-purple-500/25 hover:opacity-90 transition">
+              Masuk / Daftar
+            </button>
+          </div>
+
+          <div id="user-menu" class="hidden items-center gap-2">
+            <button onclick="showSection('dashboard')" class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-xs font-semibold hover:ring-2 ring-purple-500 transition">
+              <i class="fa-solid fa-user-circle text-purple-600 text-base"></i>
+              <span id="user-name-display" class="max-w-[90px] truncate">Akun</span>
+            </button>
+            <button id="admin-nav-btn" onclick="showSection('admin')" class="hidden px-3 py-1.5 rounded-full bg-amber-500 text-white text-xs font-bold">
+              Admin
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT: HOME -->
+  <main id="section-home" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
+    
+    <!-- BANNER SLIDER OTOMATIS -->
+    <div class="relative rounded-2xl overflow-hidden shadow-xl bg-gradient-to-r from-blue-700 via-indigo-600 to-purple-700 text-white p-6 sm:p-10">
+      <div id="banner-slider" class="transition-all duration-500">
+        <div class="max-w-2xl space-y-3">
+          <span class="inline-block px-3 py-1 rounded-full bg-white/20 backdrop-blur-sm text-xs font-bold uppercase tracking-wider">⚡ Promo Spesial RemsDigi</span>
+          <h2 id="banner-title" class="text-2xl sm:text-4xl font-extrabold leading-tight">Top Up & Aplikasi Premium Termurah Se-Indonesia!</h2>
+          <p id="banner-desc" class="text-sm sm:text-base text-blue-100">Proses otomatis 24 jam via Saldo Rems, QRIS, DANA, dan GoPay. Garansi penuh & terpercaya.</p>
+          <div class="pt-2 flex flex-wrap gap-3">
+            <a href="#katalog" class="px-5 py-2.5 rounded-xl bg-white text-purple-700 font-bold text-sm shadow-lg hover:bg-blue-50 transition">Belanja Sekarang</a>
+            <button onclick="openDepositModal()" class="px-5 py-2.5 rounded-xl bg-purple-900/50 border border-white/30 text-white font-semibold text-sm hover:bg-purple-900/70 transition">Isi Saldo Rems</button>
+          </div>
+        </div>
+      </div>
+      <div class="absolute right-6 bottom-6 hidden md:flex items-center gap-2 text-xs bg-black/20 px-3 py-1.5 rounded-full">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> Sistem Otomatis Aktif 24/7
+      </div>
+    </div>
+
+    <!-- STATISTIK PLATFORM -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+      <div class="bg-white dark:bg-darkCard p-4 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/40 text-blue-600 flex items-center justify-center text-lg"><i class="fa-solid fa-users"></i></div>
+        <div><p class="text-lg font-extrabold">48.500+</p><p class="text-xs text-slate-500">Pengguna Aktif</p></div>
+      </div>
+      <div class="bg-white dark:bg-darkCard p-4 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-900/40 text-purple-600 flex items-center justify-center text-lg"><i class="fa-solid fa-cart-check"></i></div>
+        <div><p class="text-lg font-extrabold">215.900+</p><p class="text-xs text-slate-500">Transaksi Sukses</p></div>
+      </div>
+      <div class="bg-white dark:bg-darkCard p-4 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 flex items-center justify-center text-lg"><i class="fa-solid fa-bolt"></i></div>
+        <div><p class="text-lg font-extrabold">&lt; 1 Menit</p><p class="text-xs text-slate-500">Rata-rata Proses</p></div>
+      </div>
+      <div class="bg-white dark:bg-darkCard p-4 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/40 text-amber-500 flex items-center justify-center text-lg"><i class="fa-solid fa-star"></i></div>
+        <div><p class="text-lg font-extrabold">4.9 / 5.0</p><p class="text-xs text-slate-500">Rating Pelanggan</p></div>
+      </div>
+    </div>
+
+    <!-- KATEGORI PRODUK ICON -->
+    <section>
+      <h3 class="text-lg font-bold mb-4 flex items-center gap-2"><i class="fa-solid fa-layer-group text-purple-600"></i> Kategori Layanan</h3>
+      <div class="grid grid-cols-4 sm:grid-cols-8 gap-2 sm:gap-3 text-center">
+        <button onclick="selectCategory('ALL')" class="cat-btn active p-3 rounded-2xl bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-700 hover:border-purple-500 transition flex flex-col items-center gap-1.5">
+          <span class="text-xl">🔥</span><span class="text-[11px] font-semibold">Semua</span>
+        </button>
+        <button onclick="selectCategory('Aplikasi Premium')" class="cat-btn p-3 rounded-2xl bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-700 hover:border-purple-500 transition flex flex-col items-center gap-1.5">
+          <span class="text-xl">📱</span><span class="text-[11px] font-semibold">App Premium</span>
+        </button>
+        <button onclick="selectCategory('Suntik Sosmed')" class="cat-btn p-3 rounded-2xl bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-700 hover:border-purple-500 transition flex flex-col items-center gap-1.5">
+          <span class="text-xl">🚀</span><span class="text-[11px] font-semibold">Suntik Sosmed</span>
+        </button>
+        <button onclick="selectCategory('Top Up Game')" class="cat-btn p-3 rounded-2xl bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-700 hover:border-purple-500 transition flex flex-col items-center gap-1.5">
+          <span class="text-xl">🎮</span><span class="text-[11px] font-semibold">Top Up Game</span>
+        </button>
+        <button onclick="selectCategory('Pulsa')" class="cat-btn p-3 rounded-2xl bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-700 hover:border-purple-500 transition flex flex-col items-center gap-1.5">
+          <span class="text-xl">📞</span><span class="text-[11px] font-semibold">Pulsa</span>
+        </button>
+        <button onclick="selectCategory('Kuota Internet')" class="cat-btn p-3 rounded-2xl bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-700 hover:border-purple-500 transition flex flex-col items-center gap-1.5">
+          <span class="text-xl">🌐</span><span class="text-[11px] font-semibold">Kuota Data</span>
+        </button>
+        <button onclick="selectCategory('E-Wallet')" class="cat-btn p-3 rounded-2xl bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-700 hover:border-purple-500 transition flex flex-col items-center gap-1.5">
+          <span class="text-xl">💰</span><span class="text-[11px] font-semibold">E-Wallet</span>
+        </button>
+        <button onclick="selectCategory('Token Listrik')" class="cat-btn p-3 rounded-2xl bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-700 hover:border-purple-500 transition flex flex-col items-center gap-1.5">
+          <span class="text-xl">⚡</span><span class="text-[11px] font-semibold">Token PLN</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- FLASH SALE DENGAN COUNTDOWN -->
+    <section class="bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-pink-600/10 border border-purple-500/20 rounded-2xl p-4 sm:p-6">
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+        <div class="flex items-center gap-3">
+          <h3 class="text-lg sm:text-xl font-extrabold text-purple-700 dark:text-purple-400"><i class="fa-solid fa-bolt text-amber-500 mr-1"></i> FLASH SALE</h3>
+          <div id="countdown-timer" class="flex items-center gap-1 text-xs font-bold text-white">
+            <span class="bg-slate-900 px-2 py-1 rounded">02</span>:
+            <span class="bg-slate-900 px-2 py-1 rounded">45</span>:
+            <span class="bg-slate-900 px-2 py-1 rounded">19</span>
+          </div>
+        </div>
+        <span class="text-xs font-semibold text-purple-600 dark:text-purple-300">Diskon s/d 70% terbatas!</span>
+      </div>
+      <div id="flash-sale-grid" class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4"></div>
+    </section>
+
+    <!-- KATALOG SEMUA PRODUK -->
+    <section id="katalog">
+      <div class="flex items-center justify-between mb-4">
+        <h3 id="catalog-title" class="text-lg font-bold">Semua Produk Digital</h3>
+        <span id="product-count" class="text-xs text-slate-500">Memuat produk...</span>
+      </div>
+      <div id="product-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4"></div>
+    </section>
+
+    <!-- TESTIMONI PELANGGAN -->
+    <section class="pt-4">
+      <h3 class="text-lg font-bold mb-4">Apa Kata Pelanggan RemsDigi?</h3>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-white dark:bg-darkCard p-5 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
+          <div class="text-amber-400 text-xs mb-2">★★★★★</div>
+          <p class="text-sm text-slate-600 dark:text-slate-300">"Top up Saldo Rems via QRIS gampang banget, beli Netflix 4K & CapCut Pro langsung masuk hitungan detik!"</p>
+          <p class="mt-3 text-xs font-bold text-blue-600">@rizky_bandung • Pembeli Terverifikasi</p>
+        </div>
+        <div class="bg-white dark:bg-darkCard p-5 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
+          <div class="text-amber-400 text-xs mb-2">★★★★★</div>
+          <p class="text-sm text-slate-600 dark:text-slate-300">"Suntik followers TikTok & IG di RemsDigi paling stabil. Status pesanan langsung realtime berubah di dashboard."</p>
+          <p class="mt-3 text-xs font-bold text-purple-600">@nadia.store • Reseller SMM</p>
+        </div>
+        <div class="bg-white dark:bg-darkCard p-5 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
+          <div class="text-amber-400 text-xs mb-2">★★★★★</div>
+          <p class="text-sm text-slate-600 dark:text-slate-300">"Diamond MLBB & Token Listrik PLN masuk kilat tengah malam sekalipun. Rekomendasi banget!"</p>
+          <p class="mt-3 text-xs font-bold text-blue-600">@fajar_gaming • Gamer</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- DASHBOARD PENGGUNA (RIWAYAT TRANSAKSI, DEPOSIT SALDO, PROFIL) -->
+  <section id="section-dashboard" class="hidden max-w-6xl mx-auto px-4 py-8 space-y-6">
+    <div class="flex flex-wrap items-center justify-between gap-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 rounded-2xl shadow-lg">
+      <div>
+        <p class="text-xs uppercase tracking-wider text-blue-100">Dashboard Member RemsDigi</p>
+        <h2 id="dash-user-email" class="text-xl font-bold mt-1">user@gmail.com</h2>
+        <div class="mt-3 flex items-center gap-3">
+          <div class="bg-white/20 backdrop-blur-md px-4 py-2 rounded-xl">
+            <span class="text-xs block text-blue-100">Saldo Rems Anda</span>
+            <span id="dash-balance" class="text-xl font-extrabold">Rp 0</span>
+          </div>
+          <button onclick="openDepositModal()" class="px-4 py-3 rounded-xl bg-white text-purple-700 font-bold text-xs shadow hover:bg-blue-50 transition">
+            + Deposit Saldo Rems
+          </button>
+        </div>
+      </div>
+      <div class="flex gap-2">
+        <button onclick="showSection('home')" class="px-4 py-2 rounded-xl bg-white/20 text-xs font-semibold hover:bg-white/30">← Kembali Belanja</button>
+        <button onclick="logoutUser()" class="px-4 py-2 rounded-xl bg-rose-500 text-xs font-semibold hover:bg-rose-600">Keluar</button>
+      </div>
+    </div>
+
+    <!-- Tabel Riwayat Pesanan Realtime -->
+    <div class="bg-white dark:bg-darkCard rounded-2xl border border-slate-200 dark:border-slate-700 p-5 shadow-sm">
+      <h3 class="font-bold text-base mb-4"><i class="fa-solid fa-clock-rotate-left text-purple-600 mr-2"></i>Riwayat Pesanan (Update Otomatis Realtime)</h3>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs sm:text-sm">
+          <thead class="border-b border-slate-200 dark:border-slate-700 text-slate-500">
+            <tr>
+              <th class="py-3 px-2">ID Invoice</th>
+              <th class="py-3 px-2">Produk</th>
+              <th class="py-3 px-2">Target / Akun</th>
+              <th class="py-3 px-2">Metode</th>
+              <th class="py-3 px-2">Total</th>
+              <th class="py-3 px-2">Status</th>
+            </tr>
+          </thead>
+          <tbody id="user-orders-tbody" class="divide-y divide-slate-100 dark:divide-slate-800"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Riwayat Deposit Saldo -->
+    <div class="bg-white dark:bg-darkCard rounded-2xl border border-slate-200 dark:border-slate-700 p-5 shadow-sm">
+      <h3 class="font-bold text-base mb-4"><i class="fa-solid fa-wallet text-blue-600 mr-2"></i>Riwayat Top Up Saldo Rems</h3>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs sm:text-sm">
+          <thead class="border-b border-slate-200 dark:border-slate-700 text-slate-500">
+            <tr>
+              <th class="py-3 px-2">ID Deposit</th>
+              <th class="py-3 px-2">Nominal</th>
+              <th class="py-3 px-2">Bukti TF</th>
+              <th class="py-3 px-2">Status</th>
+            </tr>
+          </thead>
+          <tbody id="user-deposits-tbody" class="divide-y divide-slate-100 dark:divide-slate-800"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- DASHBOARD ADMIN -->
+  <section id="section-admin" class="hidden max-w-6xl mx-auto px-4 py-8 space-y-6">
+    <div class="flex items-center justify-between">
+      <h2 class="text-xl font-extrabold text-purple-600">Panel Admin RemsDigi</h2>
+      <button onclick="showSection('home')" class="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-xs font-bold">Tutup Admin</button>
+    </div>
+
+    <!-- Verifikasi Deposit Saldo -->
+    <div class="bg-white dark:bg-darkCard p-5 rounded-2xl border border-slate-200 dark:border-slate-700">
+      <h3 class="font-bold mb-3">Verifikasi Deposit Saldo Rems</h3>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead class="border-b dark:border-slate-700">
+            <tr><th class="py-2">ID</th><th>User</th><th>Nominal</th><th>Bukti</th><th>Status</th><th>Aksi</th></tr>
+          </thead>
+          <tbody id="admin-deposits-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Kelola Semua Transaksi -->
+    <div class="bg-white dark:bg-darkCard p-5 rounded-2xl border border-slate-200 dark:border-slate-700">
+      <h3 class="font-bold mb-3">Semua Transaksi Masuk</h3>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead class="border-b dark:border-slate-700">
+            <tr><th class="py-2">Invoice</th><th>User</th><th>Produk</th><th>Target</th><th>Bukti</th><th>Status</th><th>Ubah Status</th></tr>
+          </thead>
+          <tbody id="admin-orders-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- MODAL LOGIN / REGISTER (SUPABASE GMAIL & GOOGLE) -->
+  <div id="auth-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+    <div class="bg-white dark:bg-darkCard w-full max-w-md rounded-2xl p-6 shadow-2xl border border-slate-200 dark:border-slate-700 relative">
+      <button onclick="closeModal('auth-modal')" class="absolute right-4 top-4 text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+      <h3 class="text-xl font-extrabold text-center bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Masuk ke RemsDigi</h3>
+      <p class="text-xs text-center text-slate-500 mt-1">Gunakan akun Google atau Email Gmail Anda</p>
+
+      <!-- Login Google OAuth -->
+      <button onclick="loginWithGoogle()" class="mt-5 w-full py-2.5 px-4 rounded-xl border border-slate-300 dark:border-slate-600 flex items-center justify-center gap-3 text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition">
+        <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5" alt="Google">
+        Lanjutkan dengan Google
+      </button>
+
+      <div class="my-4 flex items-center gap-2 text-xs text-slate-400">
+        <div class="flex-1 h-px bg-slate-200 dark:bg-slate-700"></div> atau Gmail <div class="flex-1 h-px bg-slate-200 dark:bg-slate-700"></div>
+      </div>
+
+      <form onsubmit="handleEmailAuth(event)" class="space-y-3">
+        <input type="email" id="auth-email" required placeholder="Alamat Gmail (contoh@gmail.com)" class="w-full px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-sm outline-none focus:ring-2 ring-purple-500" />
+        <input type="password" id="auth-password" required placeholder="Password (min. 6 karakter)" class="w-full px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-sm outline-none focus:ring-2 ring-purple-500" />
+        <div class="flex gap-2 pt-1">
+          <button type="submit" onclick="setAuthMode('login')" class="flex-1 py-2.5 rounded-xl bg-blue-600 text-white font-bold text-sm hover:bg-blue-700 transition">Masuk</button>
+          <button type="submit" onclick="setAuthMode('register')" class="flex-1 py-2.5 rounded-xl bg-purple-600 text-white font-bold text-sm hover:bg-purple-700 transition">Daftar Baru</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL CHECKOUT PRODUK -->
+  <div id="checkout-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
+    <div class="bg-white dark:bg-darkCard w-full max-w-lg rounded-2xl p-6 shadow-2xl border border-slate-200 dark:border-slate-700 relative my-8">
+      <button onclick="closeModal('checkout-modal')" class="absolute right-4 top-4 text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+      <h3 class="text-lg font-extrabold">Checkout Pesanan</h3>
+      <div class="mt-3 p-3 rounded-xl bg-blue-50 dark:bg-slate-800 flex justify-between items-center">
+        <div>
+          <p id="co-product-name" class="font-bold text-sm">Nama Produk</p>
+          <p id="co-product-cat" class="text-xs text-slate-500">Kategori</p>
+        </div>
+        <p id="co-product-price" class="font-extrabold text-purple-600 text-base">Rp 0</p>
+      </div>
+
+      <form onsubmit="submitOrder(event)" class="mt-4 space-y-4">
+        <div>
+          <label class="block text-xs font-bold mb-1">Data Tujuan (ID Game / Username Sosmed / No HP / Email)</label>
+          <input type="text" id="co-target" required placeholder="Contoh: @username atau 12345678 (Server)" class="w-full px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-sm outline-none focus:ring-2 ring-purple-500" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold mb-2">Pilih Metode Pembayaran</label>
+          <div class="grid grid-cols-2 gap-2 text-xs font-bold">
+            <label class="cursor-pointer border rounded-xl p-3 flex items-center gap-2 hover:border-purple-500">
+              <input type="radio" name="pay_method" value="SALDO_REMS" onchange="updatePaymentInstruction()" checked />
+              <span>💎 Saldo Rems (<span id="co-user-saldo">Rp 0</span>)</span>
+            </label>
+            <label class="cursor-pointer border rounded-xl p-3 flex items-center gap-2 hover:border-purple-500">
+              <input type="radio" name="pay_method" value="QRIS" onchange="updatePaymentInstruction()" />
+              <span>📱 QRIS Otomatis</span>
+            </label>
+            <label class="cursor-pointer border rounded-xl p-3 flex items-center gap-2 hover:border-purple-500">
+              <input type="radio" name="pay_method" value="DANA" onchange="updatePaymentInstruction()" />
+              <span>🔵 DANA</span>
+            </label>
+            <label class="cursor-pointer border rounded-xl p-3 flex items-center gap-2 hover:border-purple-500">
+              <input type="radio" name="pay_method" value="GOPAY" onchange="updatePaymentInstruction()" />
+              <span>🟢 GoPay</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- AREA INSTRUKSI PEMBAYARAN DINAMIS -->
+        <div id="payment-instruction-box" class="p-4 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs space-y-2">
+          <!-- Diisi otomatis oleh JavaScript -->
+        </div>
+
+        <!-- UPLOAD BUKTI TRANSFER (MUNCUL JIKA BUKAN SALDO REMS) -->
+        <div id="proof-upload-section" class="hidden">
+          <label class="block text-xs font-bold mb-1 text-rose-600 dark:text-rose-400">* Wajib Upload Foto Bukti Transfer</label>
+          <input type="file" id="co-proof-file" accept="image/*" class="w-full text-xs file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-purple-600 file:text-white file:font-semibold" />
+        </div>
+
+        <button type="submit" id="co-submit-btn" class="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold text-sm shadow-lg hover:opacity-90 transition">
+          Konfirmasi & Proses Pesanan
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL DEPOSIT SALDO REMS -->
+  <div id="deposit-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
+    <div class="bg-white dark:bg-darkCard w-full max-w-md rounded-2xl p-6 shadow-2xl border border-slate-200 dark:border-slate-700 relative">
+      <button onclick="closeModal('deposit-modal')" class="absolute right-4 top-4 text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+      <h3 class="text-lg font-extrabold text-purple-600"><i class="fa-solid fa-wallet mr-2"></i>Top Up Saldo Rems</h3>
+      <p class="text-xs text-slate-500 mt-1">Isi saldo akun untuk checkout instan tanpa perlu upload bukti berulang kali.</p>
+
+      <form onsubmit="submitDeposit(event)" class="mt-4 space-y-4">
+        <div>
+          <label class="block text-xs font-bold mb-1">Masukkan Jumlah Top Up (Rp)</label>
+          <input type="number" id="dep-amount" min="5000" step="1000" required placeholder="Minimal Rp 5.000 (Contoh: 50000)" class="w-full px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-sm font-bold outline-none focus:ring-2 ring-purple-500" />
+        </div>
+
+        <!-- TAMPILAN QRIS UNTUK DEPOSIT -->
+        <div class="p-4 rounded-xl bg-slate-100 dark:bg-slate-800 text-center space-y-2">
+          <p class="text-xs font-bold">Scan QRIS RemsDigi di Bawah Ini:</p>
+          <img src="/qris-remsdigi.png" onerror="this.src='https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=QRIS-REMSDIGI-083844641151'" alt="QRIS RemsDigi" class="w-44 h-44 mx-auto rounded-xl border-4 border-white shadow" />
+          <p class="text-[11px] text-slate-500">Mendukung semua E-Wallet & Mobile Banking (BCA, BRI, Mandiri, DANA, GoPay, OVO, ShopeePay)</p>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold mb-1 text-rose-600">* Upload Foto Bukti Transfer Deposit</label>
+          <input type="file" id="dep-proof-file" accept="image/*" required class="w-full text-xs file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-blue-600 file:text-white file:font-semibold" />
+        </div>
+
+        <button type="submit" id="dep-submit-btn" class="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold text-sm shadow-lg">
+          Kirim Bukti Top Up Saldo
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- FOOTER LENGKAP -->
+  <footer class="mt-16 bg-white dark:bg-darkCard border-t border-slate-200 dark:border-slate-800 py-10 text-xs text-slate-500">
+    <div class="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
+      <div>
+        <h4 class="text-base font-extrabold text-slate-800 dark:text-white mb-2">RemsDigi</h4>
+        <p>Platform marketplace produk digital, top up game, aplikasi premium, dan layanan sosial media otomatis 24 jam terpercaya di Indonesia.</p>
+      </div>
+      <div>
+        <h5 class="font-bold text-slate-800 dark:text-white mb-2">Layanan Populer</h5>
+        <ul class="space-y-1.5">
+          <li>Netflix, Spotify & CapCut Pro</li>
+          <li>Suntik Followers & Likes Sosmed</li>
+          <li>Top Up Mobile Legends & Free Fire</li>
+          <li>Pulsa, Kuota & Token Listrik PLN</li>
+        </ul>
+      </div>
+      <div>
+        <h5 class="font-bold text-slate-800 dark:text-white mb-2">Metode Pembayaran</h5>
+        <p>Saldo Rems, QRIS Otomatis, DANA, GoPay, OVO, ShopeePay, dan Transfer Bank.</p>
+      </div>
+      <div>
+        <h5 class="font-bold text-slate-800 dark:text-white mb-2">Bantuan & CS</h5>
+        <p>Layanan Pelanggan 24 Jam via WhatsApp Bot & Tiket Bantuan.</p>
+        <p class="mt-2 font-semibold text-purple-600">© 2026 RemsDigi Indonesia. All Rights Reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

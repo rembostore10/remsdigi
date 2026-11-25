@@ -1,0 +1,23 @@
+/* Animasi & Kustomisasi RemsDigi */
+html {
+  scroll-behavior: smooth;
+}
+
+.cat-btn.active {
+  border-color: #7c3aed;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.12), rgba(124, 58, 237, 0.12));
+  transform: translateY(-2px);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #7c3aed;
+  border-radius: 9999px;
+}

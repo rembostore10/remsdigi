@@ -311,12 +311,12 @@ async function submitOrder(e) {
     const { error } = await supabase.from('orders').insert([orderData]);
     if (error) throw error;
 
-    // Kirim Notifikasi + Foto Bukti TF ke WhatsApp Bot via Vercel API
-    await fetch('/api/wa-webhook', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type: 'NEW_ORDER', order: orderData })
-    });
+    // Di dalam submitOrder(e), ganti fetch('/api/wa-webhook', ...) menjadi:
+await fetch('/api/tg-webhook', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ type: 'NEW_ORDER', order: orderData })
+});
 
     alert(`Pesanan ${invoiceId} berhasil masuk & sedang otomatis diproses!`);
     closeModal('checkout-modal');
@@ -365,12 +365,12 @@ async function submitDeposit(e) {
     const { error } = await supabase.from('deposits').insert([depositData]);
     if (error) throw error;
 
-    // Kirim Notif Deposit + Foto Bukti TF ke WhatsApp Bot
-    await fetch('/api/wa-webhook', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type: 'NEW_DEPOSIT', deposit: depositData })
-    });
+    // Di dalam submitDeposit(e), ganti fetch('/api/wa-webhook', ...) menjadi:
+await fetch('/api/tg-webhook', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ type: 'NEW_DEPOSIT', deposit: depositData })
+});
 
     alert(`Permintaan deposit ${formatRupiah(amount)} terkirim! Saldo akan bertambah setelah diverifikasi.`);
     closeModal('deposit-modal');
